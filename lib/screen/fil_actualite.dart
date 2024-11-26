@@ -16,8 +16,8 @@ class FilActualiteScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncFilActualite = ref.watch(filActualiteProvider(
-        1)); // `false` indique qu'on charge les posts non-feedés
+    final asyncFilActualite = ref.watch(
+        filActualiteStreamProvider); // `false` indique qu'on charge les posts non-feedés
 
     // Récupérer les dimensions de l'écran pour ajuster les marges et les tailles
     final screenWidth = MediaQuery.of(context).size.width;
@@ -93,7 +93,7 @@ class FilActualiteScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                    ref.invalidate(filActualiteProvider(1)); // Réessayer
+                    ref.invalidate(filActualiteStreamProvider); // Réessayer
                   },
                   child: const Text('Réessayer'),
                 ),

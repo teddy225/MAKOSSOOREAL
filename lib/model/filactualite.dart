@@ -1,8 +1,3 @@
-import 'package:makosso_app/model/commentaire.dart';
-import 'package:makosso_app/model/user.dart';
-
-import 'like.dart';
-
 class FilActualite {
   FilActualite({
     required this.id,
@@ -14,6 +9,7 @@ class FilActualite {
     required this.is_feeded,
     this.created_at,
     this.updated_at,
+    this.timestamp, // Nouveau champ
   });
 
   final int id;
@@ -25,6 +21,7 @@ class FilActualite {
   final int is_feeded;
   final DateTime? created_at;
   final DateTime? updated_at;
+  final int? timestamp; // Champ timestamp
 
   factory FilActualite.fromJson(Map<String, dynamic> json) {
     return FilActualite(
@@ -43,6 +40,7 @@ class FilActualite {
               json['updated_at'],
             )
           : DateTime.now(),
+      timestamp: json['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
     );
   }
 
@@ -57,6 +55,7 @@ class FilActualite {
       'is_feeded': is_feeded,
       'created_at': created_at?.toIso8601String(),
       'updated_at': updated_at?.toIso8601String(),
+      'timestamp': timestamp,
     };
   }
 }

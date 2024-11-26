@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:makosso_app/provider/publication_text.dart';
 
 import 'package:makosso_app/widgets/home_chargement/banner_principale_chargement.dart';
-import 'package:makosso_app/widgets/home_chargement/liste_video_chargement.dart';
 import 'package:makosso_app/widgets/row_home.dart';
 
-import '../provider/fil_actualite_provider.dart';
 import '../widgets/audioliste.dart';
 import '../widgets/banner_principale.dart';
 import '../widgets/evenement_liste.dart';
@@ -74,6 +72,5 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
     );
-    ;
   }
 }

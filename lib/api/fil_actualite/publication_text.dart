@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:retry/retry.dart';
-import '../../database/databasehelper.dart';
 import '../../model/text_publication.dart';
 
 class TextpublicationService {
-  final Dio _dio =
-      Dio(BaseOptions(baseUrl: 'https://adminmakossoapp.com/public/api/posts'));
+  final Dio _dio = Dio(BaseOptions(
+      baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
 
   /// Récupère les publications de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
   /// Sinon, une requête API est effectuée.
@@ -54,7 +53,7 @@ class TextpublicationService {
       return response;
     } catch (e) {
       // Gestion des erreurs réseau spécifiques à Dio
-      if (e is DioError) {
+      if (e is DioException) {
         print('Erreur réseau: ${e.message}');
         if (e.response != null) {
           print(

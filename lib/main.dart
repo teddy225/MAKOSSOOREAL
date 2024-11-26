@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:makosso_app/model/user.dart';
+import 'package:makosso_app/screen/autentification_screen.dart';
 import 'package:makosso_app/screen/tab/bottom_tab.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'api/fil_actualite/fil_actualitte.dart';
+import 'provider/auth_provider.dart';
 
+final flutterSecureStorage = FlutterSecureStorage();
+
+final authStateProvider =
+    StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref) {
+  return AuthNotifier(ref);
+});
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     final service = FilActualitService();
-    await service.recupererfilactualite(isFeeded: inputData?['isFeeded'] ?? 0);
+    await service.recupererfilactualite(isFeeded: inputData?['isFeeded'] ?? 1);
 
     return Future.value(true);
   });
@@ -23,23 +33,25 @@ void scheduleBackgroundSync() {
   );
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true,
   );
   scheduleBackgroundSync(); // Planification des tâches périodiques
+  final storedToken = await flutterSecureStorage.read(key: 'auth_token');
 
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    ProviderScope(
+      child: MyApp(storedToken: storedToken),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String? storedToken;
+  const MyApp({super.key, required this.storedToken});
 
   @override
   Widget build(BuildContext context) {
@@ -131,9 +143,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/',
+      initialRoute:
+          storedToken != null && storedToken!.isNotEmpty ? 'Home' : '/',
       routes: {
-        '/': (ctx) => const BottomNavbar(),
+        '/': (ctx) => AuthenticationScreen(),
+        'Home': (ctx) => const BottomNavbar(),
       },
     );
   }
