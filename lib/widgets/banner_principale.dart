@@ -14,7 +14,6 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
   final PageController _pageController = PageController();
   late Timer _autoScrollTimer;
   int _currentPage = 0;
-  final int _totalPages = 10; // Nombre total de bannières
 
   @override
   void initState() {
@@ -24,7 +23,7 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
 
   void _startAutoScroll() {
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (_currentPage < _totalPages - 1) {
+      if (_currentPage < widget.textpublication.length - 1) {
         _currentPage++;
       } else {
         _currentPage = 0; // Revenir à la première page si la fin est atteinte
@@ -46,16 +45,22 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final screenWidth = mediaQuery.size.width;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding:
+          EdgeInsets.symmetric(vertical: screenHeight * 0.02), // 2% de hauteur
       child: SizedBox(
-        height: 150, // Hauteur de la bannière
+        height: screenHeight * 0.2, // 20% de hauteur
         child: PageView.builder(
           controller: _pageController,
           itemCount: widget.textpublication.length,
           itemBuilder: (context, index) {
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 18),
+              margin: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.03), // 3% de largeur
               decoration: BoxDecoration(
                 color: Colors.green,
                 borderRadius: BorderRadius.circular(12),
@@ -64,13 +69,15 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding:
+                          EdgeInsets.all(screenWidth * 0.03), // 3% de largeur
                       child: Text(
                         widget.textpublication[index].description,
                         maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize:
+                              screenWidth * 0.045, // Taille de police relative
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -84,7 +91,8 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
                     ),
                     child: Image.asset(
                       'assets/images/p4.png',
-                      width: 100,
+                      width: screenWidth * 0.25, // 25% de largeur
+                      height: double.infinity,
                       fit: BoxFit.cover,
                     ),
                   ),

@@ -14,7 +14,7 @@ class EvenementListe extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.symmetric(
           vertical: screenHeight * 0.01, // Marge verticale
-          horizontal: screenWidth * 0.05, // Marge horizontale
+          horizontal: screenWidth * 0.03, // Marge horizontale
         ),
         decoration: BoxDecoration(
           color: Colors.white,

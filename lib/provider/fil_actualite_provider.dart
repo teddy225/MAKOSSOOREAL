@@ -6,7 +6,8 @@ import '../model/filactualite.dart';
 // Instance du service pour récupérer les données
 final filActualiteServiceProvider = Provider((ref) => FilActualitService());
 
-final filActualiteStreamProvider = StreamProvider<List<FilActualite>>((ref) {
+final filActualiteStreamProvider =
+    FutureProvider<List<FilActualite>>((ref) async {
   final service = ref.watch(filActualiteServiceProvider);
-  return service.filActualiteStream;
+  return await service.recupererfilactualite(isFeeded: 1);
 });

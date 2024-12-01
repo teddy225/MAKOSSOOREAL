@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:retry/retry.dart';
 import '../../model/text_publication.dart';
 
 class TextpublicationService {
+  final flutterSecureStorage = FlutterSecureStorage();
+
   final Dio _dio = Dio(BaseOptions(
       baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
 
@@ -12,6 +15,15 @@ class TextpublicationService {
   Future<List<TextPublication>> recupererPublicationText(
       {int isFeeded = 0}) async {
     try {
+      final storedToken = await flutterSecureStorage.read(key: 'auth_token');
+
+      if (storedToken == null || storedToken.isEmpty) {
+        throw Exception('Le token est introuvable ou invalide.');
+      }
+      print(storedToken);
+      // Ajouter le token dans les headers
+      _dio.options.headers['Authorization'] = 'Bearer $storedToken';
+
       // Construire l'endpoint basé sur le paramètre 'isFeeded'
       final endpoint = isFeeded == 1 ? '/feeded' : '';
 

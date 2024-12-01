@@ -14,7 +14,7 @@ class Poste extends StatelessWidget {
         ),
         margin: const EdgeInsets.symmetric(vertical: 4),
         child: CachedNetworkImage(
-          imageUrl: imageUrl,
+          imageUrl: 'https://adminmakossoapp.com/$imageUrl',
           errorWidget: (context, url, error) => Icon(Icons.error),
         ));
   }

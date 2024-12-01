@@ -21,7 +21,7 @@ class Audioliste extends StatelessWidget {
       height: screenHeight * 0.10, // Hauteur totale de la liste horizontale
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
         itemCount: audioData.length,
         itemBuilder: (context, index) {
           final audio = audioData[index];
@@ -36,7 +36,8 @@ class Audioliste extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color:
+                      const Color.fromARGB(255, 105, 105, 105).withOpacity(0.2),
                   spreadRadius: 2,
                   blurRadius: 5,
                   offset: const Offset(0, 3),

@@ -17,7 +17,7 @@ class AuthService {
   Future<User> register(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/register', data: data);
-
+      print(response.data['user']);
       return User.fromJson(response.data['user']);
     } catch (e) {
       rethrow;

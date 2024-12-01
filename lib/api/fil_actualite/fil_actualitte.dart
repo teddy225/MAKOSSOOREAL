@@ -1,20 +1,33 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:retry/retry.dart';
 import '../../database/databasehelper.dart';
 import '../../model/filactualite.dart';
 
 class FilActualitService {
-  final Dio _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final flutterSecureStorage = FlutterSecureStorage();
 
-  final _controller = StreamController<List<FilActualite>>.broadcast();
-  Stream<List<FilActualite>> get filActualiteStream => _controller.stream;
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts',
+    ),
+  );
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   /// Récupère les publications de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
   Future<List<FilActualite>> recupererfilactualite({int isFeeded = 1}) async {
     try {
+      // Lire le token depuis FlutterSecureStorage
+      final storedToken = await flutterSecureStorage.read(key: 'auth_token');
+
+      if (storedToken == null || storedToken.isEmpty) {
+        throw Exception('Le token est introuvable ou invalide.');
+      }
+
+      // Ajouter le token dans les headers
+      _dio.options.headers['Authorization'] = 'Bearer $storedToken';
+
       final endpoint = isFeeded == 1 ? '/feeded' : '';
       final response = await retry(
         () async {
@@ -27,7 +40,6 @@ class FilActualitService {
             postes = postes
                 .where((publication) => publication.type == 'image')
                 .toList();
-            _controller.add(postes);
             print(postes);
             return postes;
           } else {
@@ -60,9 +72,5 @@ class FilActualitService {
         throw Exception('Erreur inattendue: $e');
       }
     }
-  }
-
-  void dispose() {
-    _controller.close();
   }
 }

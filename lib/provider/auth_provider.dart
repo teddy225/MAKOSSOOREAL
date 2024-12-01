@@ -37,7 +37,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       final response =
           await _ref.read(authServiceProvider).login(email, password);
       final user = response['user'];
+      print(user);
       final token = response['token'];
+      print(token);
 
       await _secureStorage.write(key: 'auth_token', value: token);
       state = AsyncValue.data(user);
@@ -56,3 +58,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     }
   }
 }
+
+final getprofile = Provider<AuthService>((ref) => AuthService());
+
+final userProfileProvider = FutureProvider<User>((ref) async {
+  final userService = ref.watch(getprofile); // Service utilisateur
+  return await userService.getProfile();
+});

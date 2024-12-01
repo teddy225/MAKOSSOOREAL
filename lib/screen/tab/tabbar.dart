@@ -10,7 +10,7 @@ class Tabbarscreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider);
+    final authState = ref.watch(userProfileProvider);
 
     return DefaultTabController(
       initialIndex: 0,
@@ -52,14 +52,24 @@ class Tabbarscreen extends ConsumerWidget {
                             ),
                           ),
                           SizedBox(width: 4),
-                          Text(
-                            '',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 223, 223, 223),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          authState.when(
+                            data: (user) {
+                              return Text(
+                                user.username,
+                                style: TextStyle(
+                                  color: Color.fromARGB(255, 223, 223, 223),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              );
+                            },
+                            error: (error, stackTrace) {
+                              return Text("error");
+                            },
+                            loading: () {
+                              return Text("...");
+                            },
+                          )
                         ],
                       ),
                       Text(
