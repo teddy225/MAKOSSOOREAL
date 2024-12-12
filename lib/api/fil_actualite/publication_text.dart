@@ -7,8 +7,8 @@ import '../../model/text_publication.dart';
 class TextpublicationService {
   final flutterSecureStorage = FlutterSecureStorage();
 
-  final Dio _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
+  final Dio _dio =
+      Dio(BaseOptions(baseUrl: 'https://api.adminmakossoapp.com/api/v1/posts'));
 
   /// Récupère les publications de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
   /// Sinon, une requête API est effectuée.

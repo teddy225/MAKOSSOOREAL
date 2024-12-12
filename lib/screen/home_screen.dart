@@ -27,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
                 return BannerPrincipale(textpublication: textpublication);
               },
               error: (error, stackTrace) {
-                return Text("Une erreur c'est produit");
+                return BannerPrincipaleChargement();
               },
               loading: () {
                 return BannerPrincipaleChargement();
@@ -36,7 +36,10 @@ class HomeScreen extends ConsumerWidget {
           ),
           // Section audios récents
           const SliverToBoxAdapter(
-            child: RowHome(titreRecent: 'Audios récents'),
+            child: RowHome(
+              titreRecent: 'Audios récents',
+              routeName: 'audioScreen',
+            ),
           ),
           const SliverToBoxAdapter(
             child: //AudioListeChargement(),
@@ -46,7 +49,10 @@ class HomeScreen extends ConsumerWidget {
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: RowHome(titreRecent: 'Videos récentes'),
+              child: RowHome(
+                titreRecent: 'Videos récentes',
+                routeName: 'videoScreen',
+              ),
             ),
           ),
           const SliverToBoxAdapter(
@@ -57,7 +63,10 @@ class HomeScreen extends ConsumerWidget {
           const SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: RowHome(titreRecent: 'Événements'),
+              child: RowHome(
+                titreRecent: 'Événements',
+                routeName: '',
+              ),
             ),
           ),
           SliverList(

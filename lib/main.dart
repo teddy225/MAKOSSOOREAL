@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:makosso_app/model/user.dart';
 import 'package:makosso_app/screen/autentification_screen.dart';
+import 'package:makosso_app/screen/intro_screen.dart';
+import 'package:makosso_app/screen/screen_element.dart/audio_screen.dart';
+import 'package:makosso_app/screen/screen_element.dart/video_screen.dart';
 import 'package:makosso_app/screen/tab/bottom_tab.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -100,6 +103,11 @@ class MyApp extends StatelessWidget {
         //   unselectedLabelColor: Color.fromARGB(255, 70, 70, 70),
         //   indicatorColor: Colors.white,
         // ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          elevation: 0,
+          foregroundColor: const Color.fromARGB(255, 54, 136, 57),
+        ),
         textTheme: TextTheme(
           titleSmall: TextStyle(
             fontSize: titleSmallFontSize, // Taille responsive pour titleSmall
@@ -148,7 +156,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (ctx) => AuthenticationScreen(),
         'Home': (ctx) => const BottomNavbar(),
+        'audioScreen': (ctx) => const AudioScreen(),
+        'videoScreen': (ctx) => const VideoScreen(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

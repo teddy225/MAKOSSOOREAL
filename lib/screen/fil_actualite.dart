@@ -83,21 +83,62 @@ class FilActualiteScreen extends ConsumerWidget {
                 ),
               ],
             ),
-        error: (error, stackTrace) => Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Une erreur est survenue : ${error.toString()}',
-                  style: TextStyle(color: Colors.red),
+        error: (error, stackTrace) => SizedBox(
+              height: screenHeight,
+              child: Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: 70,
+                      width: 70,
+                      decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(50)),
+                      child: Icon(
+                        Icons.close,
+                        size: 40,
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Une erreur s'est  produite ",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      "$error",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.only(
+                            left: 40,
+                            right: 40,
+                            top: 10,
+                            bottom: 10,
+                          )),
+                      onPressed: () {
+                        ref.invalidate(filActualiteStreamProvider);
+                      },
+                      child: Text('Réessayer'),
+                    )
+                  ],
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.invalidate(filActualiteStreamProvider); // Réessayer
-                  },
-                  child: const Text('Réessayer'),
-                ),
-              ],
+              ),
             ),
         loading: () => CustomScrollView(
               slivers: [

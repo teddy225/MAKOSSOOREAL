@@ -20,13 +20,21 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   AuthNotifier(this._ref) : super(const AsyncValue.data(null));
 
   // Fonction d'enregistrement
-  Future<void> register(Map<String, dynamic> data) async {
-    state = const AsyncValue.loading();
+  Future<bool> register(Map<String, dynamic> data) async {
+    state =
+        const AsyncValue.loading(); // Indique que l'inscription est en cours
     try {
-      final user = await _ref.read(authServiceProvider).register(data);
-      state = AsyncValue.data(user);
+      final success = await _ref.read(authServiceProvider).register(data);
+
+      if (success) {
+        state = const AsyncValue.data(null); // L'état est mis à jour
+        return true; // Succès, l'utilisateur peut aller à la page de connexion
+      } else {
+        throw Exception("L'inscription a échoué.");
+      }
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      state = AsyncValue.error(e, st); // Capture l'erreur
+      return false; // Échec
     }
   }
 

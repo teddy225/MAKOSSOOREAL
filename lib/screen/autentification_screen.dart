@@ -4,114 +4,410 @@ import '../provider/auth_provider.dart';
 
 // Page principale avec la logique de bascule entre login et inscription
 class AuthenticationScreen extends ConsumerStatefulWidget {
+  const AuthenticationScreen({super.key});
+
   @override
-  _AuthenticationScreenState createState() => _AuthenticationScreenState();
+  AuthenticationScreenState createState() => AuthenticationScreenState();
 }
 
-class _AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _countryController = TextEditingController();
+class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
+  final List<String> countries = [
+    'France',
+    'Canada',
+    'États-Unis',
+    'Allemagne',
+    'Brésil',
+    'Japon',
+    'Chine',
+    'Royaume-Uni',
+    'Italie',
+    'Espagne'
+  ];
 
-  bool isLoginView = true; // Contrôle la vue active, Login ou Inscription
+  final _formKey = GlobalKey<FormState>();
+  var emailUser = '';
+  var passwordUser = '';
+  var username = '';
+  var phoneUser = '';
+  var countryUser = '';
+  bool ischarge = false;
 
-  // Méthode pour gérer l'inscription ou la connexion
-  Future<void> _handleSubmit() async {
-    if (isLoginView) {
-      // Connexion
-      ref.read(authStateProvider.notifier).login(
-            _emailController.text,
-            _passwordController.text,
-          );
-    } else {
-      // Inscription
-      final data = {
-        'username': _usernameController.text,
-        'email': _emailController.text,
-        'phone': _phoneController.text,
-        'country': _countryController.text,
-        'password': _passwordController.text,
-      };
-      ref.read(authStateProvider.notifier).register(data);
+  Future<void> submit() async {
+    final validerForm = _formKey.currentState!.validate();
+
+    if (validerForm) {
+      _formKey.currentState!.save();
+
+      try {
+        if (isLoginView) {
+          await ref.read(authStateProvider.notifier).login(
+                emailUser,
+                passwordUser,
+              );
+        } else {
+          final data = {
+            'username': username,
+            'email': emailUser,
+            'phone': phoneUser,
+            'country': countryUser,
+            'password': passwordUser,
+          };
+          final success = await ref.read(authStateProvider.notifier).register(
+                data,
+              );
+          if (success) {
+            // Navigate to login page
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Inscription réussie!')),
+            );
+            print('login');
+            //  Navigator.pushNamed(context, '/login');
+          } else {
+            // Show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Inscription échouée!')),
+            );
+          }
+        }
+      } catch (e) {
+        print(e);
+      }
     }
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _usernameController.dispose();
-    _phoneController.dispose();
-    _countryController.dispose();
-    super.dispose();
-  }
+  bool isLoginView = true; // Contrôle la vue active, Login ou Inscription
+  String screen = 'intro';
 
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    String? selectedCountry;
 
     return Scaffold(
-      appBar: AppBar(title: Text(isLoginView ? 'Connexion' : 'Inscription')),
-      body: authState.when(
-        data: (user) {
-          if (user != null) {
-            // Si l'utilisateur est connecté, rediriger vers la page d'accueil
-            Future.delayed(Duration.zero, () {
-              Navigator.pushReplacementNamed(context, 'Home');
-            });
-          }
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (!isLoginView)
-                  TextField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(labelText: 'Nom et Prénoms'),
+      body: SingleChildScrollView(
+        child: authState.when(
+          data: (user) {
+            if (user != null) {
+              Future.microtask(() {
+                Navigator.pushReplacementNamed(context, 'authScreen');
+              });
+            }
+            return Padding(
+              padding: EdgeInsets.all(screenWidth * 0.04), // 4% de la largeur
+
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    if (isLoginView)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bienvenue',
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          )
+                        ],
+                      ),
+                    if (!isLoginView)
+                      Padding(
+                        padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.012), // 1.5% de la hauteur
+
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Nom et Prénoms',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                              borderSide: BorderSide(color: Colors.green),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: BorderSide(
+                                color: const Color.fromARGB(255, 40, 134, 43),
+                              ),
+                            ),
+                          ),
+                          validator: (valeur) {
+                            if (valeur == null ||
+                                valeur.trim().isEmpty ||
+                                valeur.length >= 50) {
+                              return 'Vérrifier le champ nom et prenom';
+                            }
+                            return null;
+                          },
+                          onSaved: (valeur) {
+                            if (valeur != null && valeur.isNotEmpty) {
+                              username = valeur.trim();
+                            }
+                          },
+                        ),
+                      ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                      child: TextFormField(
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                            borderSide: BorderSide(color: Colors.green),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(
+                                color: const Color.fromARGB(255, 40, 134, 43)),
+                          ),
+                        ),
+                        validator: (valeur) {
+                          if (valeur == null ||
+                              valeur.trim().isEmpty ||
+                              valeur.length >= 50) {
+                            return 'Votre email est incorrecte !';
+                          }
+                          return null;
+                        },
+                        onSaved: (valeur) {
+                          if (valeur != null && valeur.isNotEmpty) {
+                            emailUser = valeur.trim();
+                          }
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                      child: TextFormField(
+                        keyboardType: TextInputType.text,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Mot de passe',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                            borderSide: BorderSide(color: Colors.green),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(
+                                color: const Color.fromARGB(255, 40, 134, 43)),
+                          ),
+                        ),
+                        validator: (valeur) {
+                          if (valeur == null ||
+                              valeur.trim().isEmpty ||
+                              valeur.length >= 50) {
+                            return 'Entrer votre mot de passe SVP!';
+                          }
+                          return null;
+                        },
+                        onSaved: (valeur) {
+                          if (valeur != null && valeur.isNotEmpty) {
+                            passwordUser = valeur.trim();
+                          }
+                        },
+                      ),
+                    ),
+                    if (!isLoginView)
+                      Padding(
+                        padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                        child: TextFormField(
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Numéro de téléphone',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                              borderSide: BorderSide(color: Colors.green),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 40, 134, 43)),
+                            ),
+                          ),
+                          validator: (valeur) {
+                            if (valeur == null ||
+                                valeur.trim().isEmpty ||
+                                valeur.length >= 50) {
+                              return 'Verifier votre numero de Telephone SVP';
+                            }
+                            return null;
+                          },
+                          onSaved: (valeur) {
+                            if (valeur != null && valeur.isNotEmpty) {
+                              phoneUser = valeur.trim();
+                            }
+                          },
+                        ),
+                      ),
+                    if (!isLoginView)
+                      Padding(
+                        padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.02), // 1.8% de la hauteur
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            labelText: 'Pays',
+                            labelStyle: TextStyle(
+                                fontSize: 18, color: Colors.grey[800]),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                              borderSide: BorderSide(color: Colors.green),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6),
+                              borderSide: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 40, 134, 43)),
+                            ),
+                          ),
+                          value: selectedCountry,
+                          icon: Icon(Icons.arrow_drop_down,
+                              color: Colors.grey[800]),
+                          items: countries
+                              .map((country) => DropdownMenuItem<String>(
+                                    value: country,
+                                    child: Text(country),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            countryUser = value!;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez sélectionner un pays.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.2,
+                            vertical: screenHeight * 0.02,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.green,
+                          elevation: 5.0,
+                        ),
+                        onPressed: submit,
+                        child: Text(
+                          isLoginView ? 'Se connecter' : 'S\'inscrire',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                          foregroundColor:
+                              const Color.fromARGB(255, 30, 134, 33)),
+                      onPressed: () {
+                        setState(() {
+                          isLoginView = !isLoginView; // Basculer la vue
+                        });
+                      },
+                      child: Text(isLoginView
+                          ? 'Pas encore de compte ? S\'inscrire'
+                          : 'Déjà un compte ? Se connecter'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+          loading: () => Center(child: CircularProgressIndicator()),
+          error: (error, stack) => SizedBox(
+            height: screenHeight,
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(50)),
+                    child: Icon(
+                      Icons.close,
+                      size: 50,
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                    ),
                   ),
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(labelText: 'Email'),
-                ),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: 'Mot de passe'),
-                ),
-                if (!isLoginView)
-                  TextField(
-                    controller: _phoneController,
-                    decoration:
-                        InputDecoration(labelText: 'Numéro de téléphone'),
+                  SizedBox(height: 10),
+                  Text(
+                    "Une erreur s'est  produite ",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
                   ),
-                if (!isLoginView)
-                  TextField(
-                    controller: _countryController,
-                    decoration: InputDecoration(labelText: 'Pays'),
+                  Text(
+                    " Veillez verifier votre connection internet",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
                   ),
-                ElevatedButton(
-                  onPressed: _handleSubmit,
-                  child: Text(isLoginView ? 'Se connecter' : 'S\'inscrire'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isLoginView = !isLoginView; // Basculer la vue
-                    });
-                  },
-                  child: Text(isLoginView
-                      ? 'Pas encore de compte ? S\'inscrire'
-                      : 'Déjà un compte ? Se connecter'),
-                ),
-              ],
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.only(
+                          left: 40,
+                          right: 40,
+                          top: 10,
+                          bottom: 10,
+                        )),
+                    onPressed: () {
+                      ref.invalidate(authStateProvider);
+                    },
+                    child: Text('Réessayer'),
+                  )
+                ],
+              ),
             ),
-          );
-        },
-        loading: () => Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Erreur: $error')),
+          ),
+        ),
       ),
     );
   }

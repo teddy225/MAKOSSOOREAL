@@ -19,16 +19,58 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
     showDialog(
       context: context,
       builder: (ctx) {
-        return const AlertDialog(
-          title: Text(
-            'Pas de connexion internet',
-            style: TextStyle(
-              fontSize: 18,
-            ),
+        return AlertDialog(
+          title: Column(
+            children: [
+              Container(
+                height: 70,
+                width: 70,
+                decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(50)),
+                child: Icon(
+                  Icons.close,
+                  size: 40,
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+            ],
           ),
-          content: Text(
-            'Vérifiez votre connexion internet.',
-            style: TextStyle(fontSize: 16),
+          content: Container(
+            height: 100,
+            child: Column(
+              children: [
+                Text(
+                  'Pas de connexion internet',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                Text(
+                  'Vérifiez votre connexion internet.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.only(
+                        left: 40,
+                        right: 40,
+                        top: 10,
+                        bottom: 10,
+                      )),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Réessayer'),
+                )
+              ],
+            ),
           ),
         );
       },
@@ -45,6 +87,8 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     final index = ref.watch(
         _indexProvider); // Utilisation de `watch` pour écouter l'état du provider
     final etatConnexion = ref.watch(connectivityStreamProvider);
@@ -63,10 +107,65 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
                 );
         },
         error: (error, stackTrace) {
-          return Text('Erreur est survenue');
+          return SizedBox(
+            height: screenHeight,
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 100,
+                    width: 100,
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(50)),
+                    child: Icon(
+                      Icons.close,
+                      size: 50,
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Une erreur s'est  produite ",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    " Veillez verifier votre connection internet",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red,
+                      fontSize: 16,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.only(
+                          left: 40,
+                          right: 40,
+                          top: 10,
+                          bottom: 10,
+                        )),
+                    onPressed: () {
+                      ref.invalidate(connectivityStreamProvider);
+                    },
+                    child: Text('Réessayer'),
+                  )
+                ],
+              ),
+            ),
+          );
         },
         loading: () {
-          print('lol');
           return Center(child: CircularProgressIndicator());
         },
       ),

@@ -14,13 +14,17 @@ class AuthService {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   // Inscription de l'utilisateur
-  Future<User> register(Map<String, dynamic> data) async {
+  Future<bool> register(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/register', data: data);
-      print(response.data['user']);
-      return User.fromJson(response.data['user']);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true; // Succès
+      }
+      return false; // Échec
     } catch (e) {
-      rethrow;
+      print('Erreur lors de l\'inscription : $e');
+      return false; // Échec
     }
   }
 
