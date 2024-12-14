@@ -3,10 +3,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../auth/authentification_service.dart';
 import '../model/user.dart';
 
-// Provider pour le service d'authentification
+// AuthService provider
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
-// Provider pour la gestion de l'état d'authentification
+// AuthNotifier provider pour gérer l'état de l'authentification
 final authStateProvider =
     StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref) {
   return AuthNotifier(ref);
@@ -14,45 +14,43 @@ final authStateProvider =
 
 class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   final Ref _ref;
-  final FlutterSecureStorage _secureStorage =
-      const FlutterSecureStorage(); // Instance SecureStorage
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AuthNotifier(this._ref) : super(const AsyncValue.data(null));
 
   // Fonction d'enregistrement
   Future<bool> register(Map<String, dynamic> data) async {
-    state =
-        const AsyncValue.loading(); // Indique que l'inscription est en cours
+    state = const AsyncValue.loading();
     try {
       final success = await _ref.read(authServiceProvider).register(data);
-
       if (success) {
-        state = const AsyncValue.data(null); // L'état est mis à jour
-        return true; // Succès, l'utilisateur peut aller à la page de connexion
+        state = const AsyncValue.data(null);
+        return true;
       } else {
         throw Exception("L'inscription a échoué.");
       }
     } catch (e, st) {
-      state = AsyncValue.error(e, st); // Capture l'erreur
-      return false; // Échec
+      state = AsyncValue.error(e, st);
+      return false;
     }
   }
 
   // Fonction de connexion
-  Future<void> login(String email, String password) async {
+  Future<bool> login(String email, String password) async {
     state = const AsyncValue.loading();
+
     try {
       final response =
           await _ref.read(authServiceProvider).login(email, password);
       final user = response['user'];
-      print(user);
       final token = response['token'];
-      print(token);
 
       await _secureStorage.write(key: 'auth_token', value: token);
       state = AsyncValue.data(user);
+      return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 
@@ -67,9 +65,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
   }
 }
 
-final getprofile = Provider<AuthService>((ref) => AuthService());
-
+// Utilisation de `FutureProvider` pour récupérer le profil utilisateur
 final userProfileProvider = FutureProvider<User>((ref) async {
-  final userService = ref.watch(getprofile); // Service utilisateur
+  final userService = ref.watch(authServiceProvider);
   return await userService.getProfile();
 });

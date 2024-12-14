@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:makosso_app/model/video_model.dart';
 import 'package:retry/retry.dart';
-import '../../model/text_publication.dart';
 
 class VideoService {
   final flutterSecureStorage = FlutterSecureStorage();
@@ -10,10 +10,9 @@ class VideoService {
   final Dio _dio = Dio(BaseOptions(
       baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
 
-  /// Récupère les publications de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
+  /// Récupère les videos de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
   /// Sinon, une requête API est effectuée.
-  Future<List<TextPublication>> recupererPublicationText(
-      {int isFeeded = 0}) async {
+  Future<List<VideoModel>> recuprervideoListe({int isFeeded = 0}) async {
     try {
       final storedToken = await flutterSecureStorage.read(key: 'auth_token');
 
@@ -32,19 +31,18 @@ class VideoService {
         () async {
           final response = await _dio.get(endpoint);
           if (response.statusCode == 200) {
-            // Transformer les données de la réponse en objets TextPublication
-            List<TextPublication> publications = (response.data as List)
-                .map((publicationJson) =>
-                    TextPublication.fromJson(publicationJson))
+            // Transformer les données de la réponse en objets VideoModel
+            List<VideoModel> videos = (response.data as List)
+                .map((videoJson) => VideoModel.fromJson(videoJson))
                 .toList();
-            publications = publications
+            videos = videos
                 .where((publication) => publication.type == 'video')
                 .toList();
 
             // Sauvegarder les données dans SQLite pour le cache
 
-            print('Réponse texte réussie: $publications');
-            return publications;
+            print('Réponse texte réussie: $videos');
+            return videos;
           } else {
             // En cas d'erreur de réponse (par exemple, 404 ou 500)
             throw DioException(
@@ -61,7 +59,7 @@ class VideoService {
         onRetry: (e) => print('Nouvelle tentative après échec: $e'),
       ).timeout(const Duration(seconds: 30)); // Délai maximal pour la requête
 
-      // Retourner les publications récupérées
+      // Retourner les videos récupérées
       return response;
     } catch (e) {
       // Gestion des erreurs réseau spécifiques à Dio

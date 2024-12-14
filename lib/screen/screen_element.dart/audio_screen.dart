@@ -125,7 +125,6 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                       ),
                     ),
                   );
-                  ;
                 }),
               )
             ],

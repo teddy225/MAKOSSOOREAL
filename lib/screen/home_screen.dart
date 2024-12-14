@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:makosso_app/provider/publication_text.dart';
-
+import 'package:makosso_app/provider/video_provider.dart';
+import 'package:makosso_app/widgets/home_chargement/audio_liste_chargement.dart';
 import 'package:makosso_app/widgets/home_chargement/banner_principale_chargement.dart';
 import 'package:makosso_app/widgets/row_home.dart';
-
-import '../widgets/audioliste.dart';
 import '../widgets/banner_principale.dart';
 import '../widgets/evenement_liste.dart';
+import '../widgets/home_chargement/liste_video_chargement.dart';
 import '../widgets/video_liste.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncBannerTexte = ref.watch(textPublicationProvider(0));
+    final asyncVideo = ref.watch(videoProviderList);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -34,17 +34,29 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
           ),
-          // Section audios récents
+          // Section audios récentsk
           const SliverToBoxAdapter(
             child: RowHome(
               titreRecent: 'Audios récents',
               routeName: 'audioScreen',
             ),
           ),
-          const SliverToBoxAdapter(
-            child: //AudioListeChargement(),
-                Audioliste(),
-          ),
+          SliverToBoxAdapter(
+              child: AudioListeChargement() //AudioListeChargement(),
+              //     asyncAudio.when(
+              //   data: (audioData) {
+              //     return Audioliste(
+              //       audioData: audioData,
+              //     );
+              //   },
+              //   loading: () {
+              //     return AudioListeChargement();
+              //   },
+              //   error: (error, stackTrace) {
+              //     return Text('$error');
+              //   },
+              // ),
+              ),
           // Section vidéos récentes
           const SliverToBoxAdapter(
             child: Padding(
@@ -55,9 +67,15 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: // ListeVideoChargement(),
-                VideoListe(),
+                asyncVideo.when(
+              data: (videoData) => VideoListe(
+                videoData: videoData,
+              ),
+              loading: () => ListeVideoChargement(),
+              error: (error, stackTrace) => Text('$error'),
+            ),
           ),
           // Section événements
           const SliverToBoxAdapter(

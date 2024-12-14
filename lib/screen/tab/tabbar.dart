@@ -55,7 +55,7 @@ class Tabbarscreen extends ConsumerWidget {
                           authState.when(
                             data: (user) {
                               return Text(
-                                user.username,
+                                user.username.toUpperCase(),
                                 style: TextStyle(
                                   color: Color.fromARGB(255, 223, 223, 223),
                                   fontSize: 16,
@@ -76,7 +76,7 @@ class Tabbarscreen extends ConsumerWidget {
                         'Que cette journée vous soit bénie',
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 16,
+                          fontSize: 15,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -93,7 +93,10 @@ class Tabbarscreen extends ConsumerWidget {
                 child: Text(
                   'Accueil',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
+                    fontFamily: 'serif',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
@@ -101,21 +104,35 @@ class Tabbarscreen extends ConsumerWidget {
                 child: Text(
                   'Fil d\'actualité',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
+                    fontFamily: 'serif',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
             ],
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () async {
-                // Déconnexion
+            InkWell(
+              onTap: () async {
                 await ref.read(authStateProvider.notifier).logout();
                 // Rediriger vers la page de login
-                Navigator.pushReplacementNamed(context, '/');
+                Navigator.pushReplacementNamed(context, 'authScreen');
               },
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: Text(
+                    'Déconnexion',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontFamily: 'serif',
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

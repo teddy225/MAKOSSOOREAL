@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:makosso_app/model/user.dart';
 import 'package:makosso_app/screen/autentification_screen.dart';
-import 'package:makosso_app/screen/intro_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/audio_screen.dart';
-import 'package:makosso_app/screen/screen_element.dart/video_screen.dart';
 import 'package:makosso_app/screen/tab/bottom_tab.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -151,13 +149,13 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute:
-          storedToken != null && storedToken!.isNotEmpty ? 'Home' : '/',
+      initialRoute: storedToken != null && storedToken!.isNotEmpty
+          ? 'Home'
+          : 'authScreen',
       routes: {
-        '/': (ctx) => AuthenticationScreen(),
+        'authScreen': (ctx) => AuthenticationScreen(),
         'Home': (ctx) => const BottomNavbar(),
         'audioScreen': (ctx) => const AudioScreen(),
-        'videoScreen': (ctx) => const VideoScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

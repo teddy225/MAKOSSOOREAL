@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:makosso_app/model/audio_model.dart';
 
 class Audioliste extends StatelessWidget {
-  const Audioliste({super.key});
+  const Audioliste({required this.audioData, super.key});
+  final List<AudioModel> audioData;
 
   @override
   Widget build(BuildContext context) {
@@ -10,12 +12,6 @@ class Audioliste extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     // Exemple de données
-    final audioData = [
-      {"title": "Note vocale 1", "duration": "2:15"},
-      {"title": "Note vocale 2", "duration": "1:45"},
-      {"title": "Note vocale 3", "duration": "3:30"},
-      {"title": "Note vocale 4", "duration": "4:05"},
-    ];
 
     return SizedBox(
       height: screenHeight * 0.10, // Hauteur totale de la liste horizontale
@@ -72,20 +68,20 @@ class Audioliste extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          audio["title"]!,
+                          audio.description,
                           style: Theme.of(context).textTheme.titleMedium,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: screenHeight * 0.005),
                         LinearProgressIndicator(
-                          value: 0.5, // Simule la progression
+                          value: 0.9, // Simule la progression
                           backgroundColor: Colors.grey[300],
                           color: Colors.green,
                         ),
                         SizedBox(height: screenHeight * 0.005),
                         Text(
-                          audio["duration"]!,
+                          '${audio.title} ${index + 1}',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: screenWidth * 0.03,

@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../provider/auth_provider.dart';
@@ -31,6 +32,7 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
   var phoneUser = '';
   var countryUser = '';
   bool ischarge = false;
+  bool error = false;
 
   Future<void> submit() async {
     final validerForm = _formKey.currentState!.validate();
@@ -39,11 +41,19 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
       _formKey.currentState!.save();
 
       try {
+        setState(() {
+          ischarge = true; // Affiche le loader pendant l'envoi
+        });
+
+        final authNotifier = ref.read(authStateProvider.notifier);
+
         if (isLoginView) {
-          await ref.read(authStateProvider.notifier).login(
-                emailUser,
-                passwordUser,
-              );
+          await authNotifier.login(
+            emailUser,
+            passwordUser,
+          );
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, 'Home');
         } else {
           final data = {
             'username': username,
@@ -52,31 +62,70 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
             'country': countryUser,
             'password': passwordUser,
           };
-          final success = await ref.read(authStateProvider.notifier).register(
-                data,
-              );
+          final success = await authNotifier.register(data);
+
           if (success) {
-            // Navigate to login page
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Inscription réussie!')),
-            );
-            print('login');
-            //  Navigator.pushNamed(context, '/login');
+            // Inscription réussie
+            if (!mounted) return;
+            AwesomeDialog(
+              context: context,
+              animType: AnimType.scale,
+              dialogType: DialogType.success,
+              body: Center(
+                child: Text(
+                  'Inscription valider',
+                  style: TextStyle(fontStyle: FontStyle.italic),
+                ),
+              ),
+              btnOkOnPress: () {},
+            ).show();
+            isLoginView = true;
           } else {
-            // Show error message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Inscription échouée!')),
-            );
+            // Erreur lors de l'inscription
+            if (!mounted) return;
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.info,
+              animType: AnimType.rightSlide,
+              title: 'mauvaise information saisie',
+              desc: "L'inscription a échoué",
+              btnCancelOnPress: () {
+                ref.invalidate(authStateProvider);
+              },
+              btnOkOnPress: () {
+                ref.invalidate(authStateProvider);
+              },
+            ).show();
           }
         }
       } catch (e) {
+        // Gestion des erreurs
         print(e);
+        if (!mounted) return;
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.rightSlide,
+          title: "Aucun n'a été trouvé ",
+          desc: "inscrivez-vous ou entrer correctement vos coordonné ",
+          btnCancelOnPress: () {
+            ref.invalidate(authStateProvider);
+          },
+          btnOkOnPress: () {
+            ref.invalidate(authStateProvider);
+          },
+        ).show();
+      } finally {
+        setState(() {
+          ischarge = false; // Masque le loader après l'envoi
+        });
       }
+    } else {
+      error = true;
     }
   }
 
   bool isLoginView = true; // Contrôle la vue active, Login ou Inscription
-  String screen = 'intro';
 
   @override
   Widget build(BuildContext context) {
@@ -91,61 +140,81 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
           data: (user) {
             if (user != null) {
               Future.microtask(() {
-                Navigator.pushReplacementNamed(context, 'authScreen');
+                if (!mounted) return;
+                Navigator.pushReplacementNamed(context, 'Home');
               });
             }
-            return Padding(
+            return Container(
+              height: screenHeight,
+              width: screenWidth,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: AssetImage('assets/images/back.png'),
+                ),
+              ),
               padding: EdgeInsets.all(screenWidth * 0.04), // 4% de la largeur
-
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (isLoginView)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Bienvenue',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          )
-                        ],
-                      ),
+                    SizedBox(
+                      height:
+                          isLoginView ? screenHeight / 6 : screenHeight / 3.2,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        error == true
+                            ? SizedBox()
+                            : Text(
+                                'Bienvenue',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'serif',
+                                ),
+                              ),
+                        SizedBox(
+                          height: isLoginView ? 18 : 7,
+                        ),
+                        error == true
+                            ? SizedBox()
+                            : Text(
+                                isLoginView
+                                    ? "Connectez-vous pour recevoir les messages exclusifs du Général Makosso en personne"
+                                    : "Inscrivez-vous pour recevoir les messages exclusifs du Général Makosso en personne",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontFamily: 'serif',
+                                  color: Color.fromARGB(255, 110, 110, 110),
+                                ),
+                              ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: isLoginView ? 18 : 9,
+                    ),
                     if (!isLoginView)
                       Padding(
                         padding: EdgeInsets.only(
-                            bottom: screenHeight * 0.012), // 1.5% de la hauteur
-
+                          bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                        ),
                         child: TextFormField(
                           decoration: InputDecoration(
+                            errorStyle: TextStyle(fontSize: 12),
                             labelText: 'Nom et Prénoms',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                              borderSide: BorderSide(color: Colors.green),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6),
-                              borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 40, 134, 43),
-                              ),
                             ),
                           ),
                           validator: (valeur) {
                             if (valeur == null ||
                                 valeur.trim().isEmpty ||
                                 valeur.length >= 50) {
-                              return 'Vérrifier le champ nom et prenom';
+                              return 'Vérifiez le champ nom et prénom';
                             }
                             return null;
                           },
@@ -158,29 +227,22 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                       ),
                     Padding(
                       padding: EdgeInsets.only(
-                          bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                        bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                      ),
                       child: TextFormField(
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
+                          errorStyle: TextStyle(fontSize: 12),
                           labelText: 'Email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                            borderSide: BorderSide(color: Colors.green),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 40, 134, 43)),
                           ),
                         ),
                         validator: (valeur) {
                           if (valeur == null ||
                               valeur.trim().isEmpty ||
                               valeur.length >= 50) {
-                            return 'Votre email est incorrecte !';
+                            return 'Votre email est incorrect !';
                           }
                           return null;
                         },
@@ -193,23 +255,16 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(
-                          bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                        bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                      ),
                       child: TextFormField(
                         keyboardType: TextInputType.text,
                         obscureText: true,
                         decoration: InputDecoration(
+                          errorStyle: TextStyle(fontSize: 12),
                           labelText: 'Mot de passe',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                            borderSide: BorderSide(color: Colors.green),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: BorderSide(
-                                color: const Color.fromARGB(255, 40, 134, 43)),
                           ),
                         ),
                         validator: (valeur) {
@@ -230,30 +285,26 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                     if (!isLoginView)
                       Padding(
                         padding: EdgeInsets.only(
-                            bottom: screenHeight * 0.012), // 1.5% de la hauteur
+                          bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                        ),
                         child: TextFormField(
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
+                            errorStyle: TextStyle(fontSize: 12),
                             labelText: 'Numéro de téléphone',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
                             ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                              borderSide: BorderSide(color: Colors.green),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6),
-                              borderSide: BorderSide(
-                                  color:
-                                      const Color.fromARGB(255, 40, 134, 43)),
-                            ),
                           ),
                           validator: (valeur) {
-                            if (valeur == null ||
-                                valeur.trim().isEmpty ||
-                                valeur.length >= 50) {
-                              return 'Verifier votre numero de Telephone SVP';
+                            if (valeur == null || valeur.trim().isEmpty) {
+                              return 'Veuillez entrer un numéro de téléphone.';
+                            }
+                            if (valeur.length < 8 || valeur.length > 15) {
+                              return 'Le numéro doit comporter entre 8 et 15 chiffres.';
+                            }
+                            if (!RegExp(r'^\d+$').hasMatch(valeur)) {
+                              return 'Le numéro de téléphone doit contenir uniquement des chiffres.';
                             }
                             return null;
                           },
@@ -265,48 +316,63 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                         ),
                       ),
                     if (!isLoginView)
-                      Padding(
-                        padding: EdgeInsets.only(
-                            bottom: screenHeight * 0.02), // 1.8% de la hauteur
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'Pays',
-                            labelStyle: TextStyle(
-                                fontSize: 18, color: Colors.grey[800]),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                              borderSide: BorderSide(color: Colors.green),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6),
-                              borderSide: BorderSide(
-                                  color:
-                                      const Color.fromARGB(255, 40, 134, 43)),
-                            ),
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          errorStyle: TextStyle(fontSize: 12),
+                          labelText: 'Pays',
+                          labelStyle: TextStyle(
+                            fontSize: 18,
+                            color: Color.fromARGB(
+                                255, 41, 102, 33), // Vert spécifique
                           ),
-                          value: selectedCountry,
-                          icon: Icon(Icons.arrow_drop_down,
-                              color: Colors.grey[800]),
-                          items: countries
-                              .map((country) => DropdownMenuItem<String>(
-                                    value: country,
-                                    child: Text(country),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            countryUser = value!;
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez sélectionner un pays.';
-                            }
-                            return null;
-                          },
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color.fromARGB(255, 41, 102,
+                                  33), // Vert spécifique pour bordure sélectionnée
+                            ),
+                            borderRadius: BorderRadius.circular(6.0),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 10,
+                          ), // Réduit les marges du champ
                         ),
+                        value: selectedCountry,
+                        icon: Icon(
+                          Icons.arrow_drop_down,
+                          color: Color.fromARGB(
+                              255, 41, 102, 33), // Vert pour la flèche
+                        ),
+                        isDense:
+                            true, // Rend le champ plus compact verticalement
+                        items: countries
+                            .map((country) => DropdownMenuItem<String>(
+                                  value: country,
+                                  child: Text(
+                                    country,
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 41, 102,
+                                          33), // Vert pour le texte des éléments
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          countryUser = value!;
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez sélectionner un pays.';
+                          }
+                          return null;
+                        },
                       ),
+                    SizedBox(
+                      height: 18,
+                    ),
                     Center(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -314,99 +380,124 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                             horizontal: screenWidth * 0.2,
                             vertical: screenHeight * 0.02,
                           ),
+                          foregroundColor: Colors.green,
+                          backgroundColor: Colors.green,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.green,
-                          elevation: 5.0,
+                          elevation: 10,
+                          shadowColor: Colors.green.withOpacity(0.5),
+                          side: BorderSide(
+                            color: Colors.green,
+                            width: 2,
+                          ),
                         ),
                         onPressed: submit,
-                        child: Text(
-                          isLoginView ? 'Se connecter' : 'S\'inscrire',
+                        child: ischarge
+                            ? CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Text(
+                                isLoginView
+                                    ? 'Se connecter'.toUpperCase()
+                                    : 'S’inscrire'.toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'serif',
+                                ),
+                              ),
+                      ),
+                    ),
+                    SizedBox(height: isLoginView ? 10 : 7),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isLoginView
+                              ? "Vous n'avez pas de compte ?"
+                              : 'Déjà un compte ?',
                           style: TextStyle(
-                            fontSize: screenWidth * 0.05,
+                            color: Color.fromARGB(255, 146, 146, 146),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                          foregroundColor:
-                              const Color.fromARGB(255, 30, 134, 33)),
-                      onPressed: () {
-                        setState(() {
-                          isLoginView = !isLoginView; // Basculer la vue
-                        });
-                      },
-                      child: Text(isLoginView
-                          ? 'Pas encore de compte ? S\'inscrire'
-                          : 'Déjà un compte ? Se connecter'),
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              isLoginView = !isLoginView;
+                            });
+                          },
+                          child: Text(
+                            isLoginView ? "S'inscrire" : "Se connecter",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 42, 110, 44),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             );
           },
-          loading: () => Center(child: CircularProgressIndicator()),
-          error: (error, stack) => SizedBox(
-            height: screenHeight,
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    height: 100,
-                    width: 100,
-                    decoration: BoxDecoration(
+          loading: () => SizedBox(
+              height: screenHeight,
+              width: screenWidth,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 38, 114, 41),
+                ),
+              )),
+          error: (error, stackTrace) {
+            return SizedBox(
+              height: screenHeight,
+              child: Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: 100,
+                      width: 100,
+                      decoration: BoxDecoration(
                         color: Colors.green,
-                        borderRadius: BorderRadius.circular(50)),
-                    child: Icon(
-                      Icons.close,
-                      size: 50,
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        size: 50,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Une erreur s'est  produite ",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                      fontSize: 16,
+                    SizedBox(height: 10),
+                    Text(
+                      "Une erreur s'est produite ",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(
-                    " Veillez verifier votre connection internet",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red,
-                      fontSize: 16,
+                    Text(
+                      " Veuillez vérifier votre connexion internet",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: EdgeInsets.only(
-                          left: 40,
-                          right: 40,
-                          top: 10,
-                          bottom: 10,
-                        )),
-                    onPressed: () {
-                      ref.invalidate(authStateProvider);
-                    },
-                    child: Text('Réessayer'),
-                  )
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

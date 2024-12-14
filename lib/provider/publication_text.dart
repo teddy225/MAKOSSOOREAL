@@ -3,11 +3,11 @@ import '../api/fil_actualite/publication_text.dart';
 import '../model/text_publication.dart';
 
 // Instance du service pour récupérer les données
-final TextpublicationProvider = Provider((ref) => TextpublicationService());
+final textpublicationProvider = Provider((ref) => TextpublicationService());
 
 // FutureProvider pour la récupération des posts
 final textPublicationProvider =
     FutureProvider.family<List<TextPublication>, int>((ref, isFeeded) async {
-  final service = ref.watch(TextpublicationProvider);
+  final service = ref.watch(textpublicationProvider);
   return await service.recupererPublicationText(isFeeded: isFeeded);
 });

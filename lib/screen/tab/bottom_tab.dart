@@ -39,7 +39,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
               ),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             height: 100,
             child: Column(
               children: [
