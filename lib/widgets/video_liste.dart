@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:makosso_app/model/video_model.dart';
@@ -59,12 +60,24 @@ class VideoListe extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          Image.asset(
-                            'assets/images/p8.jpg',
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                          // Vérifier si la miniature est disponible
+                          video.thumbnail != null
+                              ? Image.memory(
+                                  video.thumbnail as Uint8List,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                )
+                              : Container(
+                                  color: Colors.black12,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                      size: 60,
+                                    ),
+                                  ),
+                                ),
                           Positioned(
                             child: Icon(
                               Icons.play_circle_fill,

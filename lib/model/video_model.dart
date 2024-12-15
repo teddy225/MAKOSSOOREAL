@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 class VideoModel {
   VideoModel({
     required this.id,
@@ -10,6 +12,7 @@ class VideoModel {
     this.created_at,
     this.updated_at,
     this.timestamp, // Nouveau champ
+    this.thumbnail,
   });
 
   final int id;
@@ -22,6 +25,7 @@ class VideoModel {
   final DateTime? created_at;
   final DateTime? updated_at;
   final int? timestamp; // Champ timestamp
+  Uint8List? thumbnail; // Champ pour stocker la miniature
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
     return VideoModel(

@@ -6,7 +6,7 @@ import 'package:makosso_app/model/video_model.dart';
 import 'package:makosso_app/provider/video_provider.dart';
 
 class VideoPlayerScreen extends ConsumerStatefulWidget {
-  const VideoPlayerScreen({Key? key}) : super(key: key);
+  const VideoPlayerScreen({super.key});
 
   @override
   ConsumerState<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -163,9 +163,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                       final video = videoList[index];
                       return ListTile(
                         title: Text(video.title ?? "Vidéo sans titre"),
-                        subtitle: Text(video.description ?? ""),
+                        subtitle: Text(video.description),
                         selected: index == _currentIndex,
-                        selectedTileColor: Colors.grey[200],
+                        selectedTileColor:
+                            const Color.fromARGB(255, 99, 128, 100),
                         onTap: () {
                           setState(() {
                             _currentIndex = index;

@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:makosso_app/model/user.dart';
 import 'package:makosso_app/screen/autentification_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/audio_screen.dart';
+import 'package:makosso_app/screen/screen_element.dart/video_screen.dart';
 import 'package:makosso_app/screen/tab/bottom_tab.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -156,6 +157,7 @@ class MyApp extends StatelessWidget {
         'authScreen': (ctx) => AuthenticationScreen(),
         'Home': (ctx) => const BottomNavbar(),
         'audioScreen': (ctx) => const AudioScreen(),
+        'videoScreen': (ctx) => VideoScreen(),
       },
       debugShowCheckedModeBanner: false,
     );
