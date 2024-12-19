@@ -13,6 +13,7 @@ class User {
     required this.phone,
   });
 
+  // Convertir un objet JSON en instance de User.
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
@@ -21,5 +22,16 @@ class User {
       country: json['country'],
       phone: json['phone'],
     );
+  }
+
+  // Convertir une instance de User en objet JSON.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'country': country,
+      'phone': phone,
+    };
   }
 }

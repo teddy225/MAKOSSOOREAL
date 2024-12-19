@@ -15,6 +15,7 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
+  @override
   void initState() {
     super.initState();
     // Créez l'animation controller pour contrôler l'animation

@@ -16,7 +16,7 @@ class _AudiolisteState extends State<Audioliste> {
   late AudioPlayer _audioPlayer;
   bool _isPlaying = false;
   int _currentIndex = -1;
-  Duration _currentPosition = Duration.zero;
+  final Map<int, Duration> _currentPositions = {}; // Positions individuelles
   final CacheManager _cacheManager = DefaultCacheManager();
   Duration _audioDuration = Duration.zero;
   final Map<int, Duration> _audioDurations = {}; // Stocke les durées
@@ -27,25 +27,21 @@ class _AudiolisteState extends State<Audioliste> {
     _audioPlayer = AudioPlayer();
     _preloadAudioDurations();
 
-    // Écoute des changements de position pour mettre à jour _currentPosition
+    // Écoute les changements de position pour mettre à jour la position actuelle uniquement pour l'index courant
     _audioPlayer.positionStream.listen((position) {
-      setState(() {
-        _currentPosition = position;
-      });
+      if (_currentIndex != -1) {
+        setState(() {
+          _currentPositions[_currentIndex] = position;
+        });
+      }
     });
 
-    // Gestion de l'état du lecteur pour réinitialiser lorsqu'un audio est terminé
+    // Gestion de la fin de lecture d'un fichier audio
     _audioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _onAudioComplete();
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
   }
 
   Future<void> _preloadAudioDurations() async {
@@ -56,15 +52,13 @@ class _AudiolisteState extends State<Audioliste> {
       try {
         // Vérifiez si l'audio est déjà en cache
         final cachedFile = await _cacheManager.getSingleFile(url);
-        if (cachedFile != null) {
-          // Utilisation du chemin du fichier caché pour obtenir la durée
-          final audioPlayer = AudioPlayer();
-          await audioPlayer.setFilePath(cachedFile.path);
-          final duration = await audioPlayer.load();
-          setState(() {
-            _audioDurations[index] = duration ?? Duration.zero;
-          });
-        }
+        // Utilisation du chemin du fichier caché pour obtenir la durée
+        final audioPlayer = AudioPlayer();
+        await audioPlayer.setFilePath(cachedFile.path);
+        final duration = await audioPlayer.load();
+        setState(() {
+          _audioDurations[index] = duration ?? Duration.zero;
+        });
       } catch (e) {
         print('Erreur lors du préchargement de la durée : $e');
         setState(() {
@@ -78,74 +72,64 @@ class _AudiolisteState extends State<Audioliste> {
   void _onAudioComplete() {
     setState(() {
       _isPlaying = false;
-      _currentPosition = Duration.zero;
       _currentIndex = -1; // Réinitialisation de l'index
     });
     _audioPlayer.stop(); // Arrêt propre pour éviter les erreurs
   }
 
-  /// Lecture d'un fichier audio
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  /// Lecture ou reprise d'un fichier audio
   Future<void> _playAudio(String url, int index) async {
     try {
-      setState(() {});
-      if (_currentIndex == index && !_isPlaying) {
-        setState(() {
-          _isPlaying = true;
-        });
-        await _audioPlayer.play();
-        return;
-      }
-      // Si l'audio actuel est déjà en lecture, arrêtez-le
-      if (_currentIndex == index && _isPlaying) {
-        setState(() {
-          _isPlaying = false;
-        });
-        await _audioPlayer.pause();
+      if (_currentIndex == index) {
+        if (_isPlaying) {
+          // Pause si l'audio est en cours de lecture
+
+          setState(() {
+            _isPlaying = false;
+          });
+          await _audioPlayer.pause();
+        } else {
+          // Reprendre la lecture depuis la position actuelle
+
+          setState(() {
+            _isPlaying = true;
+          });
+          await _audioPlayer.play();
+        }
         return;
       }
 
-      // Arrête le lecteur si un autre fichier est en cours
-      if (_isPlaying || _currentIndex != index) {
+      // Si un autre fichier est en cours de lecture, arrêtez-le
+      if (_currentIndex != -1 && _currentIndex != index) {
         setState(() {
-          _currentPosition = Duration.zero;
-          _audioDuration = Duration.zero;
+          _currentPositions[_currentIndex] = Duration.zero;
         });
         await _audioPlayer.stop();
       }
 
-      // Vérification si l'audio est déjà en cache
+      // Préparez le fichier audio
       var cachedFile = await _cacheManager.getSingleFile(url);
       await _audioPlayer.setFilePath(cachedFile.path);
 
-      // Charger l'audio pour obtenir sa durée
-      final duration = await _audioPlayer.load();
-      if (duration == null) {
-        throw Exception('Durée inconnue pour ce fichier audio.');
+      // Si une position existante est sauvegardée, reprenez à cette position
+      if (_currentPositions.containsKey(index)) {
+        await _audioPlayer.seek(_currentPositions[index]!);
       }
 
+      // Démarrer la lecture
       setState(() {
         _currentIndex = index;
-        _audioDuration = duration;
         _isPlaying = true;
       });
-
-      // Démarrer la lecture
       await _audioPlayer.play();
     } catch (e) {
       print('Erreur de lecture audio : $e');
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.info,
-        animType: AnimType.rightSlide,
-        title: "Une erreur est survenue",
-        desc: "Vérifiez votre connexion internet !",
-        btnCancelOnPress: () {},
-        btnOkOnPress: () {},
-      ).show();
-
-      setState(() {
-        _isPlaying = false;
-      });
     }
   }
 
@@ -162,8 +146,8 @@ class _AudiolisteState extends State<Audioliste> {
         itemCount: widget.audioData.length,
         itemBuilder: (context, index) {
           final audio = widget.audioData[index];
-          final duration =
-              _audioDurations[index] ?? Duration.zero; // Durée de l'audio
+          final duration = _audioDurations[index] ?? Duration.zero;
+          final position = _currentPositions[index] ?? Duration.zero;
 
           return Container(
             margin: EdgeInsets.symmetric(
@@ -234,15 +218,14 @@ class _AudiolisteState extends State<Audioliste> {
                           backgroundColor: Colors.grey[300],
                           color: const Color.fromARGB(255, 46, 100, 48),
                           value: (duration.inSeconds > 0)
-                              ? _currentPosition.inSeconds / duration.inSeconds
+                              ? position.inSeconds / duration.inSeconds
                               : 0.0,
                         ),
                         SizedBox(height: screenHeight * 0.005),
                         Row(
                           children: [
                             Text(
-                              _formatDuration(
-                                  duration), // Affichage de la durée totale
+                              _formatDuration(duration),
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: screenWidth * 0.03,
@@ -256,8 +239,7 @@ class _AudiolisteState extends State<Audioliste> {
                               ),
                             ),
                             Text(
-                              _formatDuration(
-                                  _currentPosition), // Affichage de la position actuelle
+                              _formatDuration(position),
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: screenWidth * 0.03,

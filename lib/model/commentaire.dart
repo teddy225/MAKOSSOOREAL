@@ -1,23 +1,35 @@
-class Commentaire {
-  final int id;
-  final String text;
+import 'package:makosso_app/model/user.dart';
 
-  Commentaire({
+class Comment {
+  final int id; // ID du commentaire.
+  final String content; // Contenu du commentaire.
+  final int postId; // ID de la publication associée.
+  final User user; // Auteur du commentaire.
+
+  Comment({
     required this.id,
-    required this.text,
+    required this.content,
+    required this.postId,
+    required this.user,
   });
 
-  factory Commentaire.fromJson(Map<String, dynamic> json) {
-    return Commentaire(
-      id: json['id'] as int,
-      text: json['text'] as String,
+  // Méthode pour convertir un objet JSON en instance de Comment.
+  factory Comment.fromJson(Map<String, dynamic> json) {
+    return Comment(
+      id: json['id'], // ID du commentaire.
+      content: json['content'], // Contenu du commentaire.
+      postId: json['post_id'], // ID de la publication.
+      user: User.fromJson(json['user']), // Auteur du commentaire.
     );
   }
 
+  // Méthode pour convertir une instance de Comment en JSON.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'text': text,
+      'content': content,
+      'post_id': postId,
+      'user': user.toJson(),
     };
   }
 }

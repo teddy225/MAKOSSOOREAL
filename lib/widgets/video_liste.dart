@@ -1,51 +1,11 @@
-import 'dart:io';
-import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:makosso_app/model/video_model.dart';
-import 'package:makosso_app/provider/video_provider.dart';
 import 'package:makosso_app/screen/screen_element.dart/video_player_screen.dart';
-import 'package:path_provider/path_provider.dart';
 
 class VideoListe extends StatelessWidget {
   const VideoListe({required this.videoData, super.key});
   final List<VideoModel> videoData;
-
-  Future<String> generateThumbnail(String videoUrl) async {
-    try {
-      final plugin = FcNativeVideoThumbnail();
-      print("URL de la vidéo : $videoUrl"); // Log URL
-
-      // Obtenez le répertoire temporaire
-      final tempDir = await getTemporaryDirectory();
-      final destFile =
-          "${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg";
-
-      print("Chemin de la miniature : $destFile"); // Log chemin cible
-
-      // Génération de la miniature
-      final success = await plugin.getVideoThumbnail(
-        srcFile: videoUrl,
-        destFile: destFile,
-        width: 300,
-        height: 300,
-        format: 'jpeg',
-        quality: 90,
-      );
-
-      print("Génération réussie ? $success"); // Log résultat
-
-      if (success) {
-        return destFile;
-      } else {
-        throw Exception("Échec de la génération de la miniature.");
-      }
-    } catch (err) {
-      print(
-          "Erreur lors de la génération de la miniature : $err"); // Log erreurs
-      throw Exception("Erreur : $err");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +20,6 @@ class VideoListe extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           itemCount: videoData.length,
           itemBuilder: (context, index) {
-            final video = videoData[index];
             return Consumer(
               builder: (context, ref, child) {
                 return InkWell(

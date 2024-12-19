@@ -23,7 +23,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   String? _thumbnailPath;
 
   // Liste des vignettes préchargées
-  Map<int, String> _thumbnailsCache = {};
+  final Map<int, String> _thumbnailsCache = {};
 
   @override
   void initState() {
@@ -60,15 +60,11 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
         quality: 75, // Image quality (0 to 100)
       );
 
-      if (thumbnail != null) {
-        setState(() {
-          // Cache la vignette dans un map pour les autres vidéos
-          _thumbnailsCache[_currentIndex] = thumbnail as String;
-          print('Vignette générée avec succès: $thumbnail');
-        });
-      } else {
-        print('Erreur : Vignette non générée');
-      }
+      setState(() {
+        // Cache la vignette dans un map pour les autres vidéos
+        _thumbnailsCache[_currentIndex] = thumbnail as String;
+        print('Vignette générée avec succès: $thumbnail');
+      });
     } catch (e) {
       print('Erreur lors de la génération de la vignette: $e');
     }
@@ -237,7 +233,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                           children: [
                             // Afficher la vignette si elle est dans le cache
                             _thumbnailsCache.containsKey(index)
-                                ? Container(
+                                ? SizedBox(
                                     width: 150,
                                     height: 122,
                                     child: Image.file(
@@ -245,7 +241,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                                       fit: BoxFit.cover,
                                     ),
                                   )
-                                : Container(
+                                : SizedBox(
                                     width: 150,
                                     height: 75,
                                     child: const Center(

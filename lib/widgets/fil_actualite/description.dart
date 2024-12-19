@@ -14,17 +14,21 @@ class _DescriptionState extends State<Description> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: ReadMoreText(
-        """ ${widget.description}""",
-        style: Theme.of(context).textTheme.bodyMedium,
-        trimMode: TrimMode.Line,
-        trimLines: 3,
-        trimCollapsedText: 'Afficher la suite',
-        trimExpandedText: ' Afficher moin',
-        moreStyle: Theme.of(context).textTheme.bodySmall,
-        lessStyle: Theme.of(context).textTheme.bodySmall,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: ReadMoreText(
+          textAlign: TextAlign.left,
+          """${widget.description}""",
+          style: Theme.of(context).textTheme.bodyMedium,
+          trimMode: TrimMode.Line,
+          trimLines: 3,
+          trimCollapsedText: 'Afficher la suite',
+          trimExpandedText: ' Afficher moin',
+          moreStyle: Theme.of(context).textTheme.bodySmall,
+          lessStyle: Theme.of(context).textTheme.bodySmall,
+        ),
       ),
     );
   }

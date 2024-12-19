@@ -1,10 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../provider/commentaire_provider.dart';
 
 class SectionCommentaire extends StatelessWidget {
   const SectionCommentaire(
-      {super.key, required this.nombreCommentaire, required this.nombreLike});
+      {super.key,
+      required this.nombreCommentaire,
+      required this.nombreLike,
+      required this.idcommentaire});
   final int nombreCommentaire;
   final int nombreLike;
+  final int idcommentaire;
+
+  void showCommentsModal({required BuildContext context, required int postId}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final commentsAsyncValue =
+                ref.watch(commentaireStreamProvider(postId));
+
+            return commentsAsyncValue.when(
+              data: (comments) {
+                return ListView.builder(
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = comments[index];
+                    return ListTile(
+                      title: Text(comment.content),
+                    );
+                  },
+                );
+              },
+              loading: () => Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Erreur: $error')),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +70,14 @@ class SectionCommentaire extends StatelessWidget {
                 Text(nombreCommentaire.toString(),
                     style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(width: 5),
-                Text(
-                  'commentaires',
-                  style: Theme.of(context).textTheme.labelLarge,
+                InkWell(
+                  onTap: () {
+                    print(idcommentaire);
+                  },
+                  child: Text(
+                    'commentaires',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                 ),
                 const SizedBox(
                   width: 10,
