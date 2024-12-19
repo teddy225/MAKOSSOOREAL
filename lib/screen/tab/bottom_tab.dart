@@ -26,7 +26,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
                 height: 70,
                 width: 70,
                 decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: const Color.fromARGB(255, 46, 100, 48),
                     borderRadius: BorderRadius.circular(50)),
                 child: Icon(
                   Icons.close,
@@ -57,7 +57,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
                 SizedBox(height: 10),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: const Color.fromARGB(255, 46, 100, 48),
                       padding: EdgeInsets.only(
                         left: 40,
                         right: 40,
@@ -118,7 +118,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
                     height: 100,
                     width: 100,
                     decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: const Color.fromARGB(255, 46, 100, 48),
                         borderRadius: BorderRadius.circular(50)),
                     child: Icon(
                       Icons.close,
@@ -148,7 +148,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
                   SizedBox(height: 10),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: const Color.fromARGB(255, 46, 100, 48),
                         padding: EdgeInsets.only(
                           left: 40,
                           right: 40,
@@ -195,7 +195,7 @@ class BottomNavbarState extends ConsumerState<BottomNavbar> {
               fontWeight: FontWeight.bold,
               fontSize: screenWidth * 0.03,
             ),
-            selectedItemColor: Colors.green,
+            selectedItemColor: const Color.fromARGB(255, 46, 100, 48),
             unselectedItemColor: Colors.grey[400],
             currentIndex: index,
             onTap: (value) {

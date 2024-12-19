@@ -1,126 +1,65 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:makosso_app/model/video_model.dart';
 import 'package:retry/retry.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 class VideoService {
   final flutterSecureStorage = FlutterSecureStorage();
+
   final Dio _dio = Dio(BaseOptions(
       baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
 
-  Database? _database;
+  /// Récupère les videos de l'actualité. Si un cache est disponible dans SQLite, il est utilisé.
+  /// Sinon, une requête API est effectuée.
 
-  /// Initialisation de SQLite
-  Future<void> initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'videos.db');
-
-    _database = await openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE videos (
-            id TEXT PRIMARY KEY,
-            url TEXT,
-            type TEXT,
-            thumbnail BLOB
-          )
-        ''');
-      },
-    );
-  }
-
-  /// Générer une miniature pour une vidéo
-  Future generateThumbnail(String videoPath) async {
+  Future<Uint8List?> generateThumbnail(String videoUrl) async {
     try {
-      final uint8list = await VideoThumbnail.thumbnailData(
-        video: videoPath,
-        imageFormat: ImageFormat.JPEG,
-        maxWidth: 128, // Taille de l'image
-        quality: 80, // Qualité de l'image
-      );
-      return uint8list;
+      // Générer une miniature à partir de l'URL de la vidéo
+      final Uint8List? thumbnail =
+          (await FcNativeVideoThumbnail().getVideoThumbnail(
+        width: 128, // Largeur souhaitée
+        height: 72, // Hauteur souhaitée
+        quality: 75, srcFile: videoUrl,
+        destFile: 'videoUrl', // Qualité de l'image
+      )) as Uint8List?;
+
+      // Vérifiez si la miniature a bien été générée
+      if (thumbnail == null) {
+        print('Aucune miniature générée');
+        return null;
+      }
+
+      return thumbnail;
     } catch (e) {
+      // Afficher l'erreur et retourner null si une exception survient
       print("Erreur lors de la génération de la miniature : $e");
       return null;
     }
   }
 
-  /// Sauvegarder les vidéos dans SQLite
-  Future<void> saveVideosToDatabase(List<VideoModel> videos) async {
-    if (_database == null) {
-      throw Exception("Base de données non initialisée");
-    }
-
-    final batch = _database!.batch();
-    for (var video in videos) {
-      batch.insert(
-        'videos',
-        {
-          'id': video.id,
-          'url': video.url,
-          'type': video.type,
-          'thumbnail': video.thumbnail,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
-  }
-
-  /// Récupérer les vidéos depuis SQLite
-  Future<List<VideoModel>> getVideosFromDatabase() async {
-    if (_database == null) {
-      throw Exception("Base de données non initialisée");
-    }
-
-    final maps = await _database!.query('videos');
-
-    return List.generate(
-      maps.length,
-      (i) => VideoModel(
-        id: maps[i]['id'] as int,
-        url: maps[i]['url'] as String,
-        type: maps[i]['type'] as String,
-        thumbnail: maps[i]['thumbnail'] as Uint8List,
-        uid: '',
-        title: '',
-        description: '',
-        is_feeded: 0,
-      ),
-    );
-  }
-
-  /// Récupère les vidéos (cache ou API)
   Future<List<VideoModel>> recuprervideoListe({int isFeeded = 0}) async {
     try {
-      // Charger les vidéos depuis SQLite
-      final cachedVideos = await getVideosFromDatabase();
-      if (cachedVideos.isNotEmpty) {
-        print("Chargement des vidéos depuis le cache SQLite");
-        return cachedVideos;
-      }
-
-      // Récupérer le token
       final storedToken = await flutterSecureStorage.read(key: 'auth_token');
+
       if (storedToken == null || storedToken.isEmpty) {
         throw Exception('Le token est introuvable ou invalide.');
       }
-
+      print(storedToken);
+      // Ajouter le token dans les headers
       _dio.options.headers['Authorization'] = 'Bearer $storedToken';
+
+      // Construire l'endpoint basé sur le paramètre 'isFeeded'
       final endpoint = isFeeded == 1 ? '/feeded' : '';
 
-      // Requête API avec gestion des tentatives
+      // Effectuer la requête avec une gestion des tentatives de reconnexion en cas d'échec
       final response = await retry(
         () async {
           final response = await _dio.get(endpoint);
           if (response.statusCode == 200) {
+            // Transformer les données de la réponse en objets VideoModel
             List<VideoModel> videos = (response.data as List)
                 .map((videoJson) => VideoModel.fromJson(videoJson))
                 .toList();
@@ -128,16 +67,12 @@ class VideoService {
                 .where((publication) => publication.type == 'video')
                 .toList();
 
-            // Générer les miniatures et sauvegarder dans SQLite
-            for (var video in videos) {
-              video.thumbnail =
-                  await generateThumbnail('adminmakossoapp.com/${video.url}');
-            }
+            // Sauvegarder les données dans SQLite pour le cache
 
-            await saveVideosToDatabase(videos);
-            print('Vidéos sauvegardées dans SQLite');
+            print('Réponse texte réussie: $videos');
             return videos;
           } else {
+            // En cas d'erreur de réponse (par exemple, 404 ou 500)
             throw DioException(
               requestOptions: response.requestOptions,
               response: response,
@@ -145,14 +80,17 @@ class VideoService {
             );
           }
         },
+        // Conditions pour réessayer en cas d'échec réseau ou timeout
         retryIf: (e) => e is DioException || e is TimeoutException,
-        maxAttempts: 3,
-        delayFactor: const Duration(seconds: 2),
+        maxAttempts: 3, // Nombre de tentatives de reconnection
+        delayFactor: const Duration(seconds: 2), // Délai entre chaque tentative
         onRetry: (e) => print('Nouvelle tentative après échec: $e'),
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 30)); // Délai maximal pour la requête
 
+      // Retourner les videos récupérées
       return response;
     } catch (e) {
+      // Gestion des erreurs réseau spécifiques à Dio
       if (e is DioException) {
         print('Erreur réseau: ${e.message}');
         if (e.response != null) {
@@ -161,8 +99,10 @@ class VideoService {
         }
         throw Exception('Erreur réseau: ${e.message}');
       } else if (e is TimeoutException) {
+        // Gestion des erreurs de délai
         throw Exception('Erreur de délai dépassé');
       } else {
+        // Gestion des erreurs inattendues
         print('Erreur inattendue: $e');
         throw Exception('Erreur inattendue: $e');
       }

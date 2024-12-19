@@ -19,7 +19,9 @@ class RowHome extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed(routeName);
+              Navigator.of(context).pushNamed(
+                routeName,
+              );
             },
             child: Text(
               'Voir plus',

@@ -17,25 +17,12 @@ class Tabbarscreen extends ConsumerWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.green,
+          backgroundColor: const Color.fromARGB(255, 46, 100, 48),
           title: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
             child: Row(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color.fromARGB(
-                          255, 175, 255, 161), // Couleur de la bordure
-                      width: 3, // Épaisseur de la bordure
-                    ),
-                  ),
-                  child: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/p2.jpg'),
-                    radius: 24, // Taille de l'avatar
-                  ),
-                ),
+                Container(),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -64,7 +51,7 @@ class Tabbarscreen extends ConsumerWidget {
                               );
                             },
                             error: (error, stackTrace) {
-                              return Text("error");
+                              return Text("error $error");
                             },
                             loading: () {
                               return Text("...");
@@ -126,7 +113,7 @@ class Tabbarscreen extends ConsumerWidget {
                   child: Text(
                     'Déconnexion',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Colors.white,
                       fontFamily: 'serif',
                     ),

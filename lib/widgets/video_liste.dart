@@ -1,13 +1,51 @@
-import 'dart:typed_data';
+import 'dart:io';
+import 'package:fc_native_video_thumbnail/fc_native_video_thumbnail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:makosso_app/model/video_model.dart';
 import 'package:makosso_app/provider/video_provider.dart';
 import 'package:makosso_app/screen/screen_element.dart/video_player_screen.dart';
+import 'package:path_provider/path_provider.dart';
 
 class VideoListe extends StatelessWidget {
   const VideoListe({required this.videoData, super.key});
   final List<VideoModel> videoData;
+
+  Future<String> generateThumbnail(String videoUrl) async {
+    try {
+      final plugin = FcNativeVideoThumbnail();
+      print("URL de la vidéo : $videoUrl"); // Log URL
+
+      // Obtenez le répertoire temporaire
+      final tempDir = await getTemporaryDirectory();
+      final destFile =
+          "${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+      print("Chemin de la miniature : $destFile"); // Log chemin cible
+
+      // Génération de la miniature
+      final success = await plugin.getVideoThumbnail(
+        srcFile: videoUrl,
+        destFile: destFile,
+        width: 300,
+        height: 300,
+        format: 'jpeg',
+        quality: 90,
+      );
+
+      print("Génération réussie ? $success"); // Log résultat
+
+      if (success) {
+        return destFile;
+      } else {
+        throw Exception("Échec de la génération de la miniature.");
+      }
+    } catch (err) {
+      print(
+          "Erreur lors de la génération de la miniature : $err"); // Log erreurs
+      throw Exception("Erreur : $err");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +65,6 @@ class VideoListe extends StatelessWidget {
               builder: (context, ref, child) {
                 return InkWell(
                   onTap: () {
-                    ref.read(selectedVideoProvider.notifier).state = video;
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -44,7 +81,7 @@ class VideoListe extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         width: 2,
-                        color: Colors.green,
+                        color: const Color.fromARGB(255, 46, 100, 48),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -60,24 +97,12 @@ class VideoListe extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Vérifier si la miniature est disponible
-                          video.thumbnail != null
-                              ? Image.memory(
-                                  video.thumbnail as Uint8List,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                )
-                              : Container(
-                                  color: Colors.black12,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.grey,
-                                      size: 60,
-                                    ),
-                                  ),
-                                ),
+                          Image.asset(
+                            'assets/images/p8.jpg',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
                           Positioned(
                             child: Icon(
                               Icons.play_circle_fill,

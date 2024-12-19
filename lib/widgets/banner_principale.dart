@@ -62,7 +62,7 @@ class BannerPrincipaleState extends State<BannerPrincipale> {
               margin: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.03), // 3% de largeur
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color.fromARGB(255, 46, 100, 48),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(

@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
+  fc_native_video_thumbnail
   flutter_secure_storage_windows
   rive_common
 )

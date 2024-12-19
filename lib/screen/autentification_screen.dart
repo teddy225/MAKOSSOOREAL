@@ -11,7 +11,38 @@ class AuthenticationScreen extends ConsumerStatefulWidget {
   AuthenticationScreenState createState() => AuthenticationScreenState();
 }
 
-class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
+class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
+  void initState() {
+    super.initState();
+    // Créez l'animation controller pour contrôler l'animation
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1), // Durée de l'animation
+    );
+
+    // Créez l'animation de défilement vertical (montée)
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, 2), // Départ en bas
+      end: Offset(0, 0), // Fin à la position d'origine
+    ).animate(
+      CurvedAnimation(
+          parent: _animationController,
+          curve: Curves.easeOut), // Courbe pour l'animation
+    );
+
+    // Démarre l'animation dès que l'écran est affiché
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   final List<String> countries = [
     'France',
     'Canada',
@@ -106,8 +137,8 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
           context: context,
           dialogType: DialogType.error,
           animType: AnimType.rightSlide,
-          title: "Aucun n'a été trouvé ",
-          desc: "inscrivez-vous ou entrer correctement vos coordonné ",
+          title: "Aucun Compte n'a été trouvé ",
+          desc: "inscrivez-vous ou entrer correctement vos coordonné !",
           btnCancelOnPress: () {
             ref.invalidate(authStateProvider);
           },
@@ -169,12 +200,15 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                       children: [
                         error == true
                             ? SizedBox()
-                            : Text(
-                                'Bienvenue',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'serif',
+                            : SlideTransition(
+                                position: _slideAnimation,
+                                child: Text(
+                                  'Bienvenue',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'serif',
+                                  ),
                                 ),
                               ),
                         SizedBox(
@@ -182,14 +216,17 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                         ),
                         error == true
                             ? SizedBox()
-                            : Text(
-                                isLoginView
-                                    ? "Connectez-vous pour recevoir les messages exclusifs du Général Makosso en personne"
-                                    : "Inscrivez-vous pour recevoir les messages exclusifs du Général Makosso en personne",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'serif',
-                                  color: Color.fromARGB(255, 110, 110, 110),
+                            : SlideTransition(
+                                position: _slideAnimation,
+                                child: Text(
+                                  isLoginView
+                                      ? "Connectez-vous pour recevoir les messages exclusifs du Général Makosso en personne"
+                                      : "Inscrivez-vous pour recevoir les messages exclusifs du Général Makosso en personne",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'serif',
+                                    color: Color.fromARGB(255, 110, 110, 110),
+                                  ),
                                 ),
                               ),
                       ],
@@ -198,14 +235,47 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                       height: isLoginView ? 18 : 9,
                     ),
                     if (!isLoginView)
-                      Padding(
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                          ),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              errorStyle: TextStyle(fontSize: 12),
+                              labelText: 'Nom et Prénoms',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
+                            ),
+                            validator: (valeur) {
+                              if (valeur == null ||
+                                  valeur.trim().isEmpty ||
+                                  valeur.length >= 50) {
+                                return 'Vérifiez le champ nom et prénom';
+                              }
+                              return null;
+                            },
+                            onSaved: (valeur) {
+                              if (valeur != null && valeur.isNotEmpty) {
+                                username = valeur.trim();
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: Padding(
                         padding: EdgeInsets.only(
                           bottom: screenHeight * 0.012, // 1.5% de la hauteur
                         ),
                         child: TextFormField(
+                          keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             errorStyle: TextStyle(fontSize: 12),
-                            labelText: 'Nom et Prénoms',
+                            labelText: 'Email',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
                             ),
@@ -214,231 +284,219 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen> {
                             if (valeur == null ||
                                 valeur.trim().isEmpty ||
                                 valeur.length >= 50) {
-                              return 'Vérifiez le champ nom et prénom';
+                              return 'Votre email est incorrect !';
                             }
                             return null;
                           },
                           onSaved: (valeur) {
                             if (valeur != null && valeur.isNotEmpty) {
-                              username = valeur.trim();
+                              emailUser = valeur.trim();
                             }
                           },
                         ),
                       ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        bottom: screenHeight * 0.012, // 1.5% de la hauteur
-                      ),
-                      child: TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          errorStyle: TextStyle(fontSize: 12),
-                          labelText: 'Email',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                        ),
-                        validator: (valeur) {
-                          if (valeur == null ||
-                              valeur.trim().isEmpty ||
-                              valeur.length >= 50) {
-                            return 'Votre email est incorrect !';
-                          }
-                          return null;
-                        },
-                        onSaved: (valeur) {
-                          if (valeur != null && valeur.isNotEmpty) {
-                            emailUser = valeur.trim();
-                          }
-                        },
-                      ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        bottom: screenHeight * 0.012, // 1.5% de la hauteur
-                      ),
-                      child: TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          errorStyle: TextStyle(fontSize: 12),
-                          labelText: 'Mot de passe',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                        ),
-                        validator: (valeur) {
-                          if (valeur == null ||
-                              valeur.trim().isEmpty ||
-                              valeur.length >= 50) {
-                            return 'Entrer votre mot de passe SVP!';
-                          }
-                          return null;
-                        },
-                        onSaved: (valeur) {
-                          if (valeur != null && valeur.isNotEmpty) {
-                            passwordUser = valeur.trim();
-                          }
-                        },
-                      ),
-                    ),
-                    if (!isLoginView)
-                      Padding(
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: Padding(
                         padding: EdgeInsets.only(
                           bottom: screenHeight * 0.012, // 1.5% de la hauteur
                         ),
                         child: TextFormField(
-                          keyboardType: TextInputType.phone,
+                          keyboardType: TextInputType.text,
+                          obscureText: true,
                           decoration: InputDecoration(
                             errorStyle: TextStyle(fontSize: 12),
-                            labelText: 'Numéro de téléphone',
+                            labelText: 'Mot de passe',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
                             ),
                           ),
                           validator: (valeur) {
-                            if (valeur == null || valeur.trim().isEmpty) {
-                              return 'Veuillez entrer un numéro de téléphone.';
-                            }
-                            if (valeur.length < 8 || valeur.length > 15) {
-                              return 'Le numéro doit comporter entre 8 et 15 chiffres.';
-                            }
-                            if (!RegExp(r'^\d+$').hasMatch(valeur)) {
-                              return 'Le numéro de téléphone doit contenir uniquement des chiffres.';
+                            if (valeur == null ||
+                                valeur.trim().isEmpty ||
+                                valeur.length >= 50) {
+                              return 'Entrer votre mot de passe SVP!';
                             }
                             return null;
                           },
                           onSaved: (valeur) {
                             if (valeur != null && valeur.isNotEmpty) {
-                              phoneUser = valeur.trim();
+                              passwordUser = valeur.trim();
                             }
                           },
                         ),
                       ),
+                    ),
                     if (!isLoginView)
-                      DropdownButtonFormField<String>(
-                        decoration: InputDecoration(
-                          errorStyle: TextStyle(fontSize: 12),
-                          labelText: 'Pays',
-                          labelStyle: TextStyle(
-                            fontSize: 18,
-                            color: Color.fromARGB(
-                                255, 41, 102, 33), // Vert spécifique
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.012, // 1.5% de la hauteur
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Color.fromARGB(255, 41, 102,
-                                  33), // Vert spécifique pour bordure sélectionnée
+                          child: TextFormField(
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              errorStyle: TextStyle(fontSize: 12),
+                              labelText: 'Numéro de téléphone',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(6.0),
+                            validator: (valeur) {
+                              if (valeur == null || valeur.trim().isEmpty) {
+                                return 'Veuillez entrer un numéro de téléphone.';
+                              }
+                              if (valeur.length < 8 || valeur.length > 15) {
+                                return 'Le numéro doit comporter entre 8 et 15 chiffres.';
+                              }
+                              if (!RegExp(r'^\d+$').hasMatch(valeur)) {
+                                return 'Le numéro de téléphone doit contenir uniquement des chiffres.';
+                              }
+                              return null;
+                            },
+                            onSaved: (valeur) {
+                              if (valeur != null && valeur.isNotEmpty) {
+                                phoneUser = valeur.trim();
+                              }
+                            },
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 10,
-                          ), // Réduit les marges du champ
                         ),
-                        value: selectedCountry,
-                        icon: Icon(
-                          Icons.arrow_drop_down,
-                          color: Color.fromARGB(
-                              255, 41, 102, 33), // Vert pour la flèche
-                        ),
-                        isDense:
-                            true, // Rend le champ plus compact verticalement
-                        items: countries
-                            .map((country) => DropdownMenuItem<String>(
-                                  value: country,
-                                  child: Text(
-                                    country,
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 41, 102,
-                                          33), // Vert pour le texte des éléments
+                      ),
+                    if (!isLoginView)
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            errorStyle: TextStyle(fontSize: 12),
+                            labelText: 'Pays',
+                            labelStyle: TextStyle(
+                              fontSize: 18,
+                              color: Color.fromARGB(
+                                  255, 41, 102, 33), // Vert spécifique
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color.fromARGB(255, 41, 102,
+                                    33), // Vert spécifique pour bordure sélectionnée
+                              ),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 10,
+                            ), // Réduit les marges du champ
+                          ),
+                          value: selectedCountry,
+                          icon: Icon(
+                            Icons.arrow_drop_down,
+                            color: Color.fromARGB(
+                                255, 41, 102, 33), // Vert pour la flèche
+                          ),
+                          isDense:
+                              true, // Rend le champ plus compact verticalement
+                          items: countries
+                              .map((country) => DropdownMenuItem<String>(
+                                    value: country,
+                                    child: Text(
+                                      country,
+                                      style: TextStyle(
+                                        color: Color.fromARGB(255, 41, 102,
+                                            33), // Vert pour le texte des éléments
+                                      ),
                                     ),
-                                  ),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          countryUser = value!;
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez sélectionner un pays.';
-                          }
-                          return null;
-                        },
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            countryUser = value!;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Veuillez sélectionner un pays.';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
                     SizedBox(
                       height: 18,
                     ),
-                    Center(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.2,
-                            vertical: screenHeight * 0.02,
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.2,
+                              vertical: screenHeight * 0.02,
+                            ),
+                            foregroundColor: Colors.green,
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            elevation: 10,
+                            shadowColor: Colors.green.withOpacity(0.5),
+                            side: BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
                           ),
-                          foregroundColor: Colors.green,
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          elevation: 10,
-                          shadowColor: Colors.green.withOpacity(0.5),
-                          side: BorderSide(
-                            color: Colors.green,
-                            width: 2,
-                          ),
-                        ),
-                        onPressed: submit,
-                        child: ischarge
-                            ? CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Text(
-                                isLoginView
-                                    ? 'Se connecter'.toUpperCase()
-                                    : 'S’inscrire'.toUpperCase(),
-                                style: TextStyle(
+                          onPressed: submit,
+                          child: ischarge
+                              ? CircularProgressIndicator(
                                   color: Colors.white,
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'serif',
+                                )
+                              : Text(
+                                  isLoginView
+                                      ? 'Se connecter'.toUpperCase()
+                                      : 'S’inscrire'.toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'serif',
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
                     ),
                     SizedBox(height: isLoginView ? 10 : 7),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          isLoginView
-                              ? "Vous n'avez pas de compte ?"
-                              : 'Déjà un compte ?',
-                          style: TextStyle(
-                            color: Color.fromARGB(255, 146, 146, 146),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              isLoginView = !isLoginView;
-                            });
-                          },
-                          child: Text(
-                            isLoginView ? "S'inscrire" : "Se connecter",
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            isLoginView
+                                ? "Vous n'avez pas de compte ?"
+                                : 'Déjà un compte ?',
                             style: TextStyle(
-                              color: Color.fromARGB(255, 42, 110, 44),
+                              color: Color.fromARGB(255, 146, 146, 146),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                isLoginView = !isLoginView;
+                              });
+                            },
+                            child: Text(
+                              isLoginView ? "S'inscrire" : "Se connecter",
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 42, 110, 44),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

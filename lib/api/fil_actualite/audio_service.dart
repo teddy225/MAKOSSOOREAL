@@ -6,9 +6,8 @@ import 'package:retry/retry.dart';
 
 class AudioService {
   final FlutterSecureStorage flutterSecureStorage = FlutterSecureStorage();
-  final Dio _dio;
-
-  AudioService({required Dio dio}) : _dio = dio;
+  final Dio _dio = Dio(BaseOptions(
+      baseUrl: 'https://api.adminmakossoapp.com/public/api/v1/posts'));
 
   Future<List<AudioModel>> recupererAudio({int isFeeded = 0}) async {
     try {
@@ -30,10 +29,10 @@ class AudioService {
                 .toList();
             return audios.where((audio) => audio.type == 'audio').toList();
           } else {
-            throw DioError(requestOptions: response.requestOptions);
+            throw DioException(requestOptions: response.requestOptions);
           }
         },
-        retryIf: (e) => e is DioError || e is TimeoutException,
+        retryIf: (e) => e is DioException || e is TimeoutException,
         maxAttempts: 3,
         delayFactor: const Duration(seconds: 2),
       );

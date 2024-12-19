@@ -30,7 +30,6 @@ class FilActualiteScreen extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
                       final filactualite = filactualites[index];
-                      print(filactualites.length);
                       return Column(
                         children: [
                           SizedBox(

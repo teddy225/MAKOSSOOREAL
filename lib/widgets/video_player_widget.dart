@@ -22,6 +22,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         VideoProgressIndicator(
           widget.controller,
           allowScrubbing: true,
+          colors: VideoProgressColors(playedColor: Colors.green),
         ),
       ],
     );

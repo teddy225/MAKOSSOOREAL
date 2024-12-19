@@ -21,7 +21,7 @@ class EvenementListe extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             width: 2,
-            color: Colors.green,
+            color: const Color.fromARGB(255, 46, 100, 48),
           ),
           boxShadow: [
             BoxShadow(
@@ -91,7 +91,7 @@ class EvenementListe extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.date_range_outlined,
-                              color: Colors.green,
+                              color: const Color.fromARGB(255, 46, 100, 48),
                               size: screenWidth * 0.05,
                             ),
                             SizedBox(width: screenWidth * 0.01),
@@ -112,7 +112,7 @@ class EvenementListe extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.location_on,
-                              color: Colors.green,
+                              color: const Color.fromARGB(255, 46, 100, 48),
                               size: screenWidth * 0.05,
                             ),
                             SizedBox(width: screenWidth * 0.01),

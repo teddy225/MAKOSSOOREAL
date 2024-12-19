@@ -6,6 +6,7 @@ import 'package:makosso_app/screen/autentification_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/audio_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/video_screen.dart';
 import 'package:makosso_app/screen/tab/bottom_tab.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'api/fil_actualite/fil_actualitte.dart';
@@ -37,6 +38,12 @@ void scheduleBackgroundSync() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
+
+  if (!hasSeenIntro) {
+    prefs.setBool('hasSeenIntro', true);
+  }
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true,
@@ -46,14 +53,20 @@ void main() async {
 
   runApp(
     ProviderScope(
-      child: MyApp(storedToken: storedToken),
+      child: MyApp(
+        storedToken: storedToken,
+        hasSeenIntro: hasSeenIntro,
+      ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   final String? storedToken;
-  const MyApp({super.key, required this.storedToken});
+  final bool hasSeenIntro;
+
+  const MyApp(
+      {super.key, required this.storedToken, required this.hasSeenIntro});
 
   @override
   Widget build(BuildContext context) {

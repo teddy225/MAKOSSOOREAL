@@ -52,7 +52,10 @@ dependencies:
   just_audio: ^0.9.42
   flutter_launcher_icons: ^0.14.2
   video_player: ^2.9.2
-  video_thumbnail: ^0.5.3
+  intl: ^0.20.1
+  fc_native_video_thumbnail: ^0.16.1
+  get_thumbnail_video: ^0.7.3
+  shared_preferences: ^2.3.4
 
 
 flutter_native_splash:
