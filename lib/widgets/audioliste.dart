@@ -1,4 +1,3 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -89,14 +88,12 @@ class _AudiolisteState extends State<Audioliste> {
       if (_currentIndex == index) {
         if (_isPlaying) {
           // Pause si l'audio est en cours de lecture
-
           setState(() {
             _isPlaying = false;
           });
           await _audioPlayer.pause();
         } else {
           // Reprendre la lecture depuis la position actuelle
-
           setState(() {
             _isPlaying = true;
           });
@@ -195,7 +192,7 @@ class _AudiolisteState extends State<Audioliste> {
                                   color: Colors.white),
                               onPressed: () async {
                                 await _playAudio(
-                                    'https://adminmakossoapp.com/${audio.url}',
+                                    'https://adminmakossoapp.com/${audio.url} ',
                                     index);
                               },
                             ),
@@ -217,9 +214,10 @@ class _AudiolisteState extends State<Audioliste> {
                         LinearProgressIndicator(
                           backgroundColor: Colors.grey[300],
                           color: const Color.fromARGB(255, 46, 100, 48),
-                          value: (duration.inSeconds > 0)
-                              ? position.inSeconds / duration.inSeconds
-                              : 0.0,
+                          value:
+                              (_currentIndex == index && duration.inSeconds > 0)
+                                  ? position.inSeconds / duration.inSeconds
+                                  : 0.0,
                         ),
                         SizedBox(height: screenHeight * 0.005),
                         Row(

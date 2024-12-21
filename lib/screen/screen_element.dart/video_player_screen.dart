@@ -11,7 +11,11 @@ import 'package:intl/intl.dart';
 import 'package:makosso_app/provider/video_provider.dart';
 
 class VideoPlayerScreen extends ConsumerStatefulWidget {
-  const VideoPlayerScreen({super.key});
+  VideoPlayerScreen({
+    super.key,
+    required this.currentIndex,
+  });
+  int currentIndex;
 
   @override
   ConsumerState<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -19,7 +23,6 @@ class VideoPlayerScreen extends ConsumerStatefulWidget {
 
 class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
   late VideoPlayerController _controller;
-  int _currentIndex = 0;
   String? _thumbnailPath;
 
   // Liste des vignettes préchargées
@@ -33,9 +36,9 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
 
   void _initializePlayer() {
     final videoList = ref.read(videoProviderList).value;
-    if (videoList == null || _currentIndex >= videoList.length) return;
+    if (videoList == null || widget.currentIndex >= videoList.length) return;
 
-    final selectedVideo = videoList[_currentIndex];
+    final selectedVideo = videoList[widget.currentIndex];
 
     _controller = VideoPlayerController.networkUrl(
       Uri.parse('https://adminmakossoapp.com/${selectedVideo.url}'),
@@ -62,7 +65,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
 
       setState(() {
         // Cache la vignette dans un map pour les autres vidéos
-        _thumbnailsCache[_currentIndex] = thumbnail as String;
+        _thumbnailsCache[widget.currentIndex] = thumbnail as String;
         print('Vignette générée avec succès: $thumbnail');
       });
     } catch (e) {
@@ -72,9 +75,10 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
 
   void _preloadNextVideo() {
     final videoList = ref.read(videoProviderList).value;
-    if (videoList == null || _currentIndex + 1 >= videoList.length) return;
+    if (videoList == null || widget.currentIndex + 1 >= videoList.length)
+      return;
 
-    final nextVideo = videoList[_currentIndex + 1];
+    final nextVideo = videoList[widget.currentIndex + 1];
     _generateThumbnail(
         nextVideo.url); // Précharge la vignette de la vidéo suivante
   }
@@ -97,20 +101,21 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
 
   void _playNext() {
     final videoList = ref.read(videoProviderList).value;
-    if (videoList == null || _currentIndex >= videoList.length - 1) return;
+    if (videoList == null || widget.currentIndex >= videoList.length - 1)
+      return;
 
     setState(() {
-      _currentIndex++;
+      widget.currentIndex++;
     });
     _controller.dispose();
     _initializePlayer();
   }
 
   void _playPrevious() {
-    if (_currentIndex <= 0) return;
+    if (widget.currentIndex <= 0) return;
 
     setState(() {
-      _currentIndex--;
+      widget.currentIndex--;
     });
     _controller.dispose();
     _initializePlayer();
@@ -186,7 +191,7 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
           Container(
             padding: const EdgeInsets.only(left: 5, bottom: 5),
             child: ReadMoreText(
-              """ Description :  ${videoList![_currentIndex].description}""",
+              """ Description :  ${videoList![widget.currentIndex].description}""",
               style: Theme.of(context).textTheme.bodyMedium,
               trimMode: TrimMode.Line,
               trimLines: 3,
@@ -251,13 +256,13 @@ class _VideoPlayerScreenState extends ConsumerState<VideoPlayerScreen> {
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
-                                    _currentIndex = index;
+                                    widget.currentIndex = index;
                                   });
                                   _controller.dispose();
                                   _initializePlayer();
                                 },
                                 child: Container(
-                                  color: index == _currentIndex
+                                  color: index == widget.currentIndex
                                       ? const Color.fromARGB(111, 15, 50, 11)
                                       : const Color.fromARGB(
                                           255, 255, 255, 255),

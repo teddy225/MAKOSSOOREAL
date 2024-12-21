@@ -27,7 +27,9 @@ class VideoListe extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const VideoPlayerScreen(),
+                        builder: (context) => VideoPlayerScreen(
+                          currentIndex: index,
+                        ),
                       ),
                     );
                   },

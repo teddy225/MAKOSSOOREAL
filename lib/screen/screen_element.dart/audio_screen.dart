@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:makosso_app/model/audio_model.dart';
 import 'package:makosso_app/provider/audio_provider.dart';
@@ -20,6 +21,8 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
   bool _isLoading = false;
   int _currentIndex = -1;
   Duration _currentPosition = Duration.zero;
+  final Map<int, Duration> _audioDurations = {}; // Stocke les durées
+
   final CacheManager _cacheManager = DefaultCacheManager();
   Duration _audioDuration = Duration.zero;
 
@@ -155,7 +158,8 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                   color: Colors.green,
                 ),
                 child: Image.asset(
-                  'assets/images/p001.png',
+                  'assets/images/audio.png',
+                  fit: BoxFit.cover,
                 ),
               ),
               SizedBox(
@@ -165,6 +169,20 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                         itemCount: audoData.length,
                         itemBuilder: (ctx, index) {
                           final AudioModel audio = audoData[index];
+                          String? formatDate(DateTime? dateTime) {
+                            if (dateTime == null) {
+                              return null;
+                            }
+                            return DateFormat('dd MMM yyyy').format(dateTime);
+                          }
+
+                          String? formatHeure(DateTime? dateTime) {
+                            if (dateTime == null) {
+                              return null;
+                            }
+                            return DateFormat('hh:mm').format(dateTime);
+                          }
+
                           return Container(
                             margin: EdgeInsets.symmetric(
                               vertical: screenHeight * 0.01,
@@ -194,8 +212,8 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                                   // Bouton de lecture circulaire
                                   CircleAvatar(
                                     radius: screenWidth * 0.07,
-                                    backgroundColor: const Color.fromARGB(
-                                        255, 105, 240, 123),
+                                    backgroundColor:
+                                        const Color.fromARGB(255, 46, 100, 48),
                                     child: AnimatedSwitcher(
                                       duration:
                                           const Duration(milliseconds: 300),
@@ -244,7 +262,8 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                                         SizedBox(height: screenHeight * 0.005),
                                         LinearProgressIndicator(
                                           backgroundColor: Colors.grey[300],
-                                          color: Colors.green,
+                                          color: const Color.fromARGB(
+                                              255, 36, 95, 38),
                                           value: (_audioDuration.inSeconds > 0)
                                               ? _currentPosition.inSeconds /
                                                   _audioDuration.inSeconds
@@ -254,18 +273,20 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                                         Row(
                                           children: [
                                             Text(
-                                              _formatDuration(_audioDuration),
+                                              formatDate(audio.created_at) ??
+                                                  'Date inconnue',
                                               style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: screenWidth * 0.03,
+                                                fontSize: screenWidth * 0.035,
+                                                color: Colors.black54,
                                               ),
                                             ),
-                                            Text('/'),
+                                            Text(" / heure "),
                                             Text(
-                                              _formatDuration(_currentPosition),
+                                              formatHeure(audio.created_at) ??
+                                                  'Date inconnue',
                                               style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: screenWidth * 0.03,
+                                                fontSize: screenWidth * 0.035,
+                                                color: Colors.black54,
                                               ),
                                             ),
                                           ],

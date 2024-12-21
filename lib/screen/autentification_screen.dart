@@ -215,25 +215,23 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                         SizedBox(
                           height: isLoginView ? 18 : 7,
                         ),
-                        error == true
-                            ? SizedBox()
-                            : SlideTransition(
-                                position: _slideAnimation,
-                                child: Text(
-                                  isLoginView
-                                      ? "Connectez-vous pour recevoir les messages exclusifs du Général Makosso en personne"
-                                      : "Inscrivez-vous pour recevoir les messages exclusifs du Général Makosso en personne",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontFamily: 'serif',
-                                    color: Color.fromARGB(255, 110, 110, 110),
-                                  ),
-                                ),
-                              ),
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: Text(
+                            isLoginView
+                                ? "Connectez-vous pour recevoir les messages exclusifs du Général Makosso en personne."
+                                : "Inscrivez-vous pour recevoir les messages exclusifs du Général Makosso en personne.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'serif',
+                              color: Color.fromARGB(255, 110, 110, 110),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(
-                      height: isLoginView ? 18 : 9,
+                      height: isLoginView ? 30 : 9,
                     ),
                     if (!isLoginView)
                       SlideTransition(
@@ -336,6 +334,69 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                           padding: EdgeInsets.only(
                             bottom: screenHeight * 0.012, // 1.5% de la hauteur
                           ),
+                          child: DropdownButtonFormField<String>(
+                            decoration: InputDecoration(
+                              errorStyle: TextStyle(fontSize: 12),
+                              labelText: 'Pays',
+                              labelStyle: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(
+                                    255, 41, 102, 33), // Vert spécifique
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 41, 102,
+                                      33), // Vert spécifique pour bordure sélectionnée
+                                ),
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 10,
+                              ), // Réduit les marges du champ
+                            ),
+                            value: selectedCountry,
+                            icon: Icon(
+                              Icons.arrow_drop_down,
+                              color: Color.fromARGB(
+                                  255, 41, 102, 33), // Vert pour la flèche
+                            ),
+                            isDense:
+                                true, // Rend le champ plus compact verticalement
+                            items: countries
+                                .map((country) => DropdownMenuItem<String>(
+                                      value: country,
+                                      child: Text(
+                                        country,
+                                        style: TextStyle(
+                                          color: Color.fromARGB(255, 41, 102,
+                                              33), // Vert pour le texte des éléments
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              countryUser = value!;
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Veuillez sélectionner un pays.';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                    if (!isLoginView)
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: screenHeight * 0.012, // 1.5% de la hauteur
+                          ),
                           child: TextFormField(
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
@@ -363,64 +424,6 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                               }
                             },
                           ),
-                        ),
-                      ),
-                    if (!isLoginView)
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            errorStyle: TextStyle(fontSize: 12),
-                            labelText: 'Pays',
-                            labelStyle: TextStyle(
-                              fontSize: 18,
-                              color: Color.fromARGB(
-                                  255, 41, 102, 33), // Vert spécifique
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(6.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color.fromARGB(255, 41, 102,
-                                    33), // Vert spécifique pour bordure sélectionnée
-                              ),
-                              borderRadius: BorderRadius.circular(6.0),
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 10,
-                            ), // Réduit les marges du champ
-                          ),
-                          value: selectedCountry,
-                          icon: Icon(
-                            Icons.arrow_drop_down,
-                            color: Color.fromARGB(
-                                255, 41, 102, 33), // Vert pour la flèche
-                          ),
-                          isDense:
-                              true, // Rend le champ plus compact verticalement
-                          items: countries
-                              .map((country) => DropdownMenuItem<String>(
-                                    value: country,
-                                    child: Text(
-                                      country,
-                                      style: TextStyle(
-                                        color: Color.fromARGB(255, 41, 102,
-                                            33), // Vert pour le texte des éléments
-                                      ),
-                                    ),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            countryUser = value!;
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Veuillez sélectionner un pays.';
-                            }
-                            return null;
-                          },
                         ),
                       ),
                     SizedBox(

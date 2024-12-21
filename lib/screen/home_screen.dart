@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:makosso_app/provider/event_provider.dart';
 import 'package:makosso_app/provider/publication_text.dart';
 import 'package:makosso_app/provider/video_provider.dart';
 import 'package:makosso_app/widgets/audioliste.dart';
+import 'package:makosso_app/widgets/evenement_liste.dart';
 import 'package:makosso_app/widgets/home_chargement/audio_liste_chargement.dart';
 import 'package:makosso_app/widgets/home_chargement/banner_principale_chargement.dart';
 import 'package:makosso_app/widgets/row_home.dart';
 import '../provider/audio_provider.dart';
 import '../widgets/banner_principale.dart';
-import '../widgets/evenement_liste.dart';
 import '../widgets/home_chargement/liste_video_chargement.dart';
 import '../widgets/video_liste.dart';
 
@@ -74,7 +75,7 @@ class _State extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
     final asyncBannerTexte = ref.watch(textPublicationProvider(0));
     final asyncVideo = ref.watch(videoProviderList);
     final asyncAudio = ref.watch(audioProviderList);
-
+    final asyncEvent = ref.watch(evenetLisProvider);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -159,26 +160,24 @@ class _State extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
               padding: EdgeInsets.symmetric(vertical: 8),
               child: RowHome(
                 titreRecent: 'Événements',
-                routeName: '',
+                routeName: 'evenementScreen',
               ),
             ),
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: EvenementListe(), // Liste d'événements
-                    ),
-                  ),
+
+          SliverToBoxAdapter(
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: asyncEvent.when(
+                  data: (eventData) => EvenementListe(
+                      evenementData: eventData), // Passez les événements
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Text('Erreur: $error'),
                 ),
               ),
-              childCount: 2, // Unique section pour les événements
             ),
           ),
         ],

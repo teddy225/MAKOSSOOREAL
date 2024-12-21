@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../provider/fil_actualite_provider.dart';
-import '../provider/commentaire_provider.dart'; // Assurez-vous d'importer le provider des commentaires
 import '../widgets/fil_actualite/description.dart';
 import '../widgets/fil_actualite/poste.dart';
 import '../widgets/fil_actualite/posteur.dart';
