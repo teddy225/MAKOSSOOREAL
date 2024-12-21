@@ -15,6 +15,8 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
+  String selectedCountry = 'Mali';
+  String selectedPrefix = '+223'; // Préfixe par défaut (Mali)
   @override
   void initState() {
     super.initState();
@@ -44,19 +46,38 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
     super.dispose();
   }
 
-  final List<String> countries = [
-    'France',
-    'Canada',
-    'États-Unis',
-    'Allemagne',
-    'Brésil',
-    'Japon',
-    'Chine',
-    'Royaume-Uni',
-    'Italie',
-    'Espagne'
+  final List<Map<String, String>> countries = [
+    {'country': 'Mali', 'prefix': '+223'},
+    {'country': 'Sénégal', 'prefix': '+221'},
+    {'country': 'Côte d\'Ivoire', 'prefix': '+225'},
+    {'country': 'Burkina Faso', 'prefix': '+226'},
+    {'country': 'Niger', 'prefix': '+227'},
+    {'country': 'Togo', 'prefix': '+228'},
+    {'country': 'Bénin', 'prefix': '+229'},
+    {'country': 'Guinée', 'prefix': '+224'},
+    {'country': 'Sierra Leone', 'prefix': '+232'},
+    {'country': 'Liberia', 'prefix': '+231'},
+    {'country': 'Gabon', 'prefix': '+241'},
+    {'country': 'Cameroun', 'prefix': '+237'},
+    {'country': 'Congo', 'prefix': '+242'},
+    {'country': 'République Démocratique du Congo', 'prefix': '+243'},
+    {'country': 'Rwanda', 'prefix': '+250'},
+    {'country': 'Burundi', 'prefix': '+257'},
+    {'country': 'Congo-Brazzaville', 'prefix': '+242'},
+    {'country': 'Tchad', 'prefix': '+235'},
+    {'country': 'Mauritanie', 'prefix': '+222'},
+    {'country': 'Madagascar', 'prefix': '+261'},
+    {'country': 'République Centrafricaine', 'prefix': '+236'},
+    {'country': 'Comores', 'prefix': '+269'},
+    {'country': 'Djibouti', 'prefix': '+253'},
+    {'country': 'Seychelles', 'prefix': '+248'},
+    {'country': 'Haïti', 'prefix': '+509'},
+    {'country': 'Luxembourg', 'prefix': '+352'},
+    {'country': 'Belgique', 'prefix': '+32'},
+    {'country': 'Suisse', 'prefix': '+41'},
+    {'country': 'Monaco', 'prefix': '+377'},
+    {'country': 'Andorre', 'prefix': '+376'}
   ];
-
   final _formKey = GlobalKey<FormState>();
   var emailUser = '';
   var passwordUser = '';
@@ -242,8 +263,20 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                           ),
                           child: TextFormField(
                             decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 41, 102,
+                                      33), // Vert spécifique pour bordure sélectionnée
+                                ),
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
                               errorStyle: TextStyle(fontSize: 12),
                               labelText: 'Nom et Prénoms',
+                              labelStyle: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(
+                                    143, 41, 102, 33), // Vert spécifique
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(6.0),
                               ),
@@ -273,8 +306,20 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                         child: TextFormField(
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color.fromARGB(255, 41, 102,
+                                    33), // Vert spécifique pour bordure sélectionnée
+                              ),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
                             errorStyle: TextStyle(fontSize: 12),
                             labelText: 'Email',
+                            labelStyle: TextStyle(
+                              fontSize: 16,
+                              color: Color.fromARGB(
+                                  143, 41, 102, 33), // Vert spécifique
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
                             ),
@@ -305,8 +350,20 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                           keyboardType: TextInputType.text,
                           obscureText: true,
                           decoration: InputDecoration(
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Color.fromARGB(255, 41, 102,
+                                    33), // Vert spécifique pour bordure sélectionnée
+                              ),
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
                             errorStyle: TextStyle(fontSize: 12),
                             labelText: 'Mot de passe',
+                            labelStyle: TextStyle(
+                              fontSize: 16,
+                              color: Color.fromARGB(
+                                  143, 41, 102, 33), // Vert spécifique
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(6.0),
                             ),
@@ -338,6 +395,7 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                             decoration: InputDecoration(
                               errorStyle: TextStyle(fontSize: 12),
                               labelText: 'Pays',
+
                               labelStyle: TextStyle(
                                 fontSize: 16,
                                 color: Color.fromARGB(
@@ -359,28 +417,23 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                               ), // Réduit les marges du champ
                             ),
                             value: selectedCountry,
-                            icon: Icon(
-                              Icons.arrow_drop_down,
-                              color: Color.fromARGB(
-                                  255, 41, 102, 33), // Vert pour la flèche
-                            ),
-                            isDense:
-                                true, // Rend le champ plus compact verticalement
-                            items: countries
-                                .map((country) => DropdownMenuItem<String>(
-                                      value: country,
-                                      child: Text(
-                                        country,
-                                        style: TextStyle(
-                                          color: Color.fromARGB(255, 41, 102,
-                                              33), // Vert pour le texte des éléments
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              countryUser = value!;
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectedCountry = newValue!;
+                                // Mettez à jour le préfixe en fonction du pays choisi
+                                selectedPrefix = countries.firstWhere(
+                                    (country) =>
+                                        country['country'] ==
+                                        selectedCountry)['prefix']!;
+                              });
                             },
+                            items: countries.map<DropdownMenuItem<String>>(
+                                (Map<String, String> country) {
+                              return DropdownMenuItem<String>(
+                                value: country['country']!,
+                                child: Text(country['country']!),
+                              );
+                            }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Veuillez sélectionner un pays.';
@@ -400,8 +453,22 @@ class AuthenticationScreenState extends ConsumerState<AuthenticationScreen>
                           child: TextFormField(
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 41, 102,
+                                      33), // Vert spécifique pour bordure sélectionnée
+                                ),
+                                borderRadius: BorderRadius.circular(6.0),
+                              ),
                               errorStyle: TextStyle(fontSize: 12),
                               labelText: 'Numéro de téléphone',
+                              prefixText:
+                                  '$selectedPrefix ', // Affiche le préfixe en fonction du pays sélectionné
+                              labelStyle: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(
+                                    143, 41, 102, 33), // Vert spécifique
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(6.0),
                               ),
