@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:makosso_app/model/user.dart';
 import 'package:makosso_app/screen/autentification_screen.dart';
+import 'package:makosso_app/screen/intro_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/audio_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/evenement_screen.dart';
 import 'package:makosso_app/screen/screen_element.dart/video_screen.dart';
@@ -19,6 +20,7 @@ final authStateProvider =
     StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref) {
   return AuthNotifier(ref);
 });
+
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     final service = FilActualitService();
@@ -39,18 +41,22 @@ void scheduleBackgroundSync() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialisation des préférences partagées
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
 
+  // Marquer l'intro comme vue
   if (!hasSeenIntro) {
-    prefs.setBool('hasSeenIntro', true);
+    await prefs.setBool('hasSeenIntro', true);
   }
-  Workmanager().initialize(
-    callbackDispatcher,
-    isInDebugMode: true,
-  );
-  scheduleBackgroundSync(); // Planification des tâches périodiques
-  final storedToken = await flutterSecureStorage.read(key: 'auth_token');
+
+  // Initialisation des tâches de fond
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  scheduleBackgroundSync();
+
+  // Récupération du jeton
+  String? storedToken = await flutterSecureStorage.read(key: 'auth_token');
 
   runApp(
     ProviderScope(
@@ -66,12 +72,14 @@ class MyApp extends StatelessWidget {
   final String? storedToken;
   final bool hasSeenIntro;
 
-  const MyApp(
-      {super.key, required this.storedToken, required this.hasSeenIntro});
+  const MyApp({
+    super.key,
+    required this.storedToken,
+    required this.hasSeenIntro,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Récupérer la largeur de l'écran
     double screenWidth = MediaQuery.of(context).size.width;
 
     // Calculer le facteur de mise à l'échelle
@@ -164,9 +172,11 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: storedToken != null && storedToken!.isNotEmpty
-          ? 'Home'
-          : 'authScreen',
+      home: hasSeenIntro
+          ? (storedToken != null && storedToken!.isNotEmpty
+              ? const BottomNavbar()
+              : AuthenticationScreen())
+          : const IntroScreen(),
       routes: {
         'authScreen': (ctx) => AuthenticationScreen(),
         'Home': (ctx) => const BottomNavbar(),
