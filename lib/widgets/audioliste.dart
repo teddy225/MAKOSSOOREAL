@@ -192,7 +192,7 @@ class _AudiolisteState extends State<Audioliste> {
                                   color: Colors.white),
                               onPressed: () async {
                                 await _playAudio(
-                                    'https://adminmakossoapp.com/${audio.url} ',
+                                    'https://adminmakossoapp.com/${audio.url}',
                                     index);
                               },
                             ),

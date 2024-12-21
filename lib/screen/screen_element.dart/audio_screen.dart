@@ -163,7 +163,7 @@ class _AudioScreenState extends ConsumerState<AudioScreen> {
                 ),
               ),
               SizedBox(
-                  height: screenHeight * 0.6466,
+                  height: screenHeight * 0.4,
                   child: asyncAudio.when(
                     data: (audoData) => ListView.builder(
                         itemCount: audoData.length,

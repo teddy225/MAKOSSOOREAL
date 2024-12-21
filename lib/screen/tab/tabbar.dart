@@ -108,15 +108,12 @@ class Tabbarscreen extends ConsumerWidget {
                 Navigator.pushReplacementNamed(context, 'authScreen');
               },
               child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: Text(
-                    'Déconnexion',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontFamily: 'serif',
-                    ),
+                child: Text(
+                  'Déconnexion',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontFamily: 'serif',
                   ),
                 ),
               ),
